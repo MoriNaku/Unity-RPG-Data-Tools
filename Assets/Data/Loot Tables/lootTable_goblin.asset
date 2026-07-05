@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 160b766f7720b4740b3c9810fc4208d4, type: 3}
+  m_Name: lootTable_goblin
+  m_EditorClassIdentifier: Assembly-CSharp::LootTableData
+  id: lootTable_goblin
+  label: Loot Table (Goblin)
+  manualTags: []
+  tagList: []
+  table:
+  - item: {fileID: 11400000, guid: da9474874ef1ac04c8ee8ccaebff4613, type: 2}
+    amount: 0
+    chance: 0

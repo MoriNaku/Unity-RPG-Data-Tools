@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a76ebd971cfd5f641b7f34d26805254b, type: 3}
+  m_Name: The Master Sword
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  id: weapon_the_master_sword
+  label: The Master Sword
+  tagList:
+  - {fileID: 11400000, guid: 49dd57ababcdcae47aee1edaca1caa65, type: 2}
+  - {fileID: 11400000, guid: a4a7073d88b33334181b56bfba60b555, type: 2}
+  desc: The sword of legend.
+  icon: {fileID: 0}
+  itemType: 1
+  effects:
+  - rid: 1614982518148694094
+  - rid: 1614982518148694096
+  equipType: 6
+  weaponType: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 1614982518148694094
+      type: {class: DamageEffect, ns: , asm: Assembly-CSharp}
+      data:
+        amount: 30
+    - rid: 1614982518148694096
+      type: {class: KnockbackEffect, ns: , asm: Assembly-CSharp}
+      data:
+        force: 1.03

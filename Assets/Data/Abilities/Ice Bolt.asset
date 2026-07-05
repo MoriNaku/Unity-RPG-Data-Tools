@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b93bcdb42c2bf47986cda841a1b041, type: 3}
+  m_Name: Ice Bolt
+  m_EditorClassIdentifier: Assembly-CSharp::AbilityData
+  id: ability_ice_bolt
+  label: Ice Bolt
+  manualTags:
+  - {fileID: 11400000, guid: 29923066b1410b84fa65937e310b0f88, type: 2}
+  tagList: []
+  desc: A bolt of ice
+  icon: {fileID: 0}
+  effects:
+  - rid: 1614982495941689494
+  - rid: 1614982495941689496
+  references:
+    version: 2
+    RefIds:
+    - rid: 1614982495941689494
+      type: {class: DamageEffect, ns: , asm: Assembly-CSharp}
+      data:
+        amount: 33
+    - rid: 1614982495941689496
+      type: {class: KnockbackEffect, ns: , asm: Assembly-CSharp}
+      data:
+        force: 0.32
