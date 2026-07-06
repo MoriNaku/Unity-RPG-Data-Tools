@@ -565,11 +565,11 @@ public class ActorView : EditorWindow
             id.stringValue = "actor_" + formatID;
 
             string path = AssetDatabase.GetAssetPath(loot);
-            Debug.Log($"OldPath: {path}");
+            //Debug.Log($"OldPath: {path}");
             string newPath = AssetDatabase.GenerateUniqueAssetPath(
                 Path.Combine(Path.GetDirectoryName(path), $"lootTable_{formatID}.asset")
             );
-            Debug.Log($"NewPath: {newPath}");
+            //Debug.Log($"NewPath: {newPath}");
 
             string uniqueName = Path.GetFileNameWithoutExtension(newPath);
             Debug.Log($"UniqueName: {uniqueName}");
