@@ -44,11 +44,9 @@ Base item class extended by:
 * ArmorData
 * ConsumableData
 
-### MonsterData
+### ActorData
 
-Stores monster-specific information, including abilities and loot.
-
-*(Planned to evolve into a more general ActorData base class for players, NPCs, monsters, and other actors.)*
+Stores actor-specific information, including abilities and loot.
 
 ### SkillData
 
