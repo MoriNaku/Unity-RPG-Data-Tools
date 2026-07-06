@@ -15,13 +15,13 @@ public class AssetView : EditorWindow
 {
     private List<CustomTag> tags = new();
     private List<AbilityData> abilities = new();
-    private List<MonsterData> monsters = new();
+    private List<ActorData> actors = new();
     private List<ItemData> items = new();
     private int currentTab = 0;
 
     private List<(Button element, CustomTag data)> tTiles = new();
     private List<(Button element, AbilityData data)> aTiles = new();
-    private List<(Button element, MonsterData data)> mTiles = new();
+    private List<(Button element, ActorData data)> mTiles = new();
     private List<(Button element, ItemData data)> iTiles = new();
 
     private Dictionary<string, VisualElement> tabFilterContainers = new();
@@ -88,17 +88,17 @@ public class AssetView : EditorWindow
             () => AbilityView.Open(null)
         );
 
-        //Monster Tab
-        var monTab = new Tab("Monsters");
+        //Actor Tab
+        var monTab = new Tab("Actors");
         tabs.Add(monTab);
 
         SetupTab(monTab,
-            monsters,
+            actors,
             mTiles,
-            a => MonsterView.Open(a),
+            a => ActorView.Open(a),
             a => a.icon,
             a => a.label,
-            () => MonsterView.Open(null)
+            () => ActorView.Open(null)
         );
 
         //Item Tab
@@ -129,12 +129,12 @@ public class AssetView : EditorWindow
     {
         string[] guidsT = AssetDatabase.FindAssets("t:CustomTag", new[] { "Assets/Data/Tags" });
         string[] guidsA = AssetDatabase.FindAssets("t:AbilityData", new[] { "Assets/Data/Abilities" });
-        string[] guidsM = AssetDatabase.FindAssets("t:MonsterData", new[] { "Assets/Data/Monsters" });
+        string[] guidsM = AssetDatabase.FindAssets("t:ActorData", new[] { "Assets/Data/Actors" });
         string[] guidsI = AssetDatabase.FindAssets("t:ItemData", new[] { "Assets/Data/Items" });
 
         tags = new List<CustomTag>();
         abilities = new List<AbilityData>();
-        monsters = new List<MonsterData>();
+        actors = new List<ActorData>();
         items = new List<ItemData>();
 
         foreach(string guid in guidsT)
@@ -160,11 +160,11 @@ public class AssetView : EditorWindow
         foreach (string guid in guidsM)
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
-            MonsterData monster = AssetDatabase.LoadAssetAtPath<MonsterData>(path);
+            ActorData monster = AssetDatabase.LoadAssetAtPath<ActorData>(path);
 
             if (monster != null)
             {
-                monsters.Add(monster);
+                actors.Add(monster);
             }
         }
         foreach (string guid in guidsI)
@@ -286,10 +286,10 @@ public class AssetView : EditorWindow
                     activeFilters["Abilities"].Add(tag);
                 break;
             case 2:
-                if (activeFilters["Monsters"].Contains(tag))
-                    activeFilters["Monsters"].Remove(tag);
+                if (activeFilters["Actors"].Contains(tag))
+                    activeFilters["Actors"].Remove(tag);
                 else
-                    activeFilters["Monsters"].Add(tag);
+                    activeFilters["Actors"].Add(tag);
                 break;
             case 3:
                 if (activeFilters["Items"].Contains(tag))
@@ -333,11 +333,11 @@ public class AssetView : EditorWindow
                 }
                 break;
             case 2:
-                if (activeFilters["Monsters"].Count == 0) return true;
+                if (activeFilters["Actors"].Count == 0) return true;
 
                 if (data.tagList == null) return false;
 
-                foreach (var tag in activeFilters["Monsters"])
+                foreach (var tag in activeFilters["Actors"])
                 {
                     if (!data.tagList.Contains(tag)) return false;
                 }

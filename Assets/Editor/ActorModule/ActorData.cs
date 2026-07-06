@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 
-[CreateAssetMenu(fileName = "MonsterData", menuName = "Custom/Monster")]
-public class MonsterData : EntityData
+[CreateAssetMenu(fileName = "MonsterData", menuName = "Custom/Actor")]
+public class ActorData : EntityData
 {
     public string desc;
     public Sprite icon;

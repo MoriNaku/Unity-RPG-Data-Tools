@@ -9,7 +9,7 @@ using UnityEditor.Search;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-public class MonsterView : EditorWindow
+public class ActorView : EditorWindow
 {
     private List<CustomTag> allTags;
     private List<AbilityData> allAbilities;
@@ -26,7 +26,7 @@ public class MonsterView : EditorWindow
     private Image _preview;
     private UnityEditor.UIElements.ObjectField _icon;
 
-    private MonsterData _obj;
+    private ActorData _obj;
     private SerializedObject _serializedObj;
     private SerializedProperty _labelProp;
     private SerializedProperty _descProp;
@@ -37,7 +37,7 @@ public class MonsterView : EditorWindow
 
     private void OnSelectionChange()
     {
-        if (Selection.activeObject is MonsterData data)
+        if (Selection.activeObject is ActorData data)
         {
             SetData(data);
         }
@@ -52,13 +52,13 @@ public class MonsterView : EditorWindow
         }
         CreateGUI();
     }
-    public static void Open(MonsterData data)
+    public static void Open(ActorData data)
     {
-        var window = GetWindow<MonsterView>("MonsterView");
+        var window = GetWindow<ActorView>("ActorView");
         window.Focus();
         window.SetData(data);
     }
-    private void SetData(MonsterData data)
+    private void SetData(ActorData data)
     {
         _obj = data;
 
@@ -110,25 +110,25 @@ public class MonsterView : EditorWindow
         CreateGUI();
     }
 
-    [MenuItem("Assets/Open in MonsterView", true)]
-    private static bool ValidateOpenMonster()
+    [MenuItem("Assets/Open in ActorView", true)]
+    private static bool ValidateOpenActor()
     {
-        return Selection.activeObject is MonsterData;
+        return Selection.activeObject is ActorData;
     }
 
-    [MenuItem("Assets/Open in MonsterView")]
-    private static void OpenSelectedMonster()
+    [MenuItem("Assets/Open in ActorView")]
+    private static void OpenSelectedActor()
     {
-        if (Selection.activeObject is MonsterData monster)
+        if (Selection.activeObject is ActorData actor)
         {
-            Open(monster);
+            Open(actor);
         }
     }
-    [MenuItem("Window/UI Toolkit/MonsterView")]
+    [MenuItem("Window/UI Toolkit/ActorView")]
     public static void ShowExample()
     {
-        MonsterView wnd = GetWindow<MonsterView>();
-        wnd.titleContent = new GUIContent("MonsterView");
+        ActorView wnd = GetWindow<ActorView>();
+        wnd.titleContent = new GUIContent("ActorView");
     }
     private void GatherTags()
     {
@@ -183,7 +183,7 @@ public class MonsterView : EditorWindow
         _label = new TextField("Name");
         _label.style.fontSize = 24;
         _label.style.unityTextAlign = TextAnchor.MiddleCenter;
-        _label.value = "Monster Name";
+        _label.value = "Actor Name";
         if (_labelProp != null) _label.BindProperty(_labelProp);
         infoView.Add(_label);
 
@@ -204,7 +204,7 @@ public class MonsterView : EditorWindow
         _desc.style.paddingTop = 4;
         _desc.multiline = true;
         _desc.style.height = 118;
-        _desc.value = "Monster Description";
+        _desc.value = "Actor Description";
         if (_descProp != null) _desc.BindProperty(_descProp);
         _desc.verticalScrollerVisibility = ScrollerVisibility.AlwaysVisible;
 
@@ -268,6 +268,10 @@ public class MonsterView : EditorWindow
         }
 
         //Loot Table
+        if(loot == null)
+        {
+            loot = ScriptableObject.CreateInstance<LootTableData>();
+        }
         lootView = loot.GetVisuals(() => LootEntryView.Open(loot));
         infoView.Add(lootView);
 
@@ -536,8 +540,8 @@ public class MonsterView : EditorWindow
 
         if (_obj == null || _serializedObj == null)
         {
-            var data = ScriptableObject.CreateInstance<MonsterData>();
-            data.id = "monster_" + formatID;
+            var data = ScriptableObject.CreateInstance<ActorData>();
+            data.id = "actor_" + formatID;
             data.label = _label.value;
             data.desc = _desc.value;
             data.icon = _icon.value as Sprite;
@@ -547,7 +551,7 @@ public class MonsterView : EditorWindow
             data.lootTable.id = $"lootTable_{formatID}";
             data.lootTable.label = $"Loot Table ({_label.value})";
 
-            AssetDatabase.CreateAsset(data, "Assets/Data/Monsters/" + _label.value + ".asset");
+            AssetDatabase.CreateAsset(data, "Assets/Data/Actors/" + _label.value + ".asset");
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
@@ -558,7 +562,7 @@ public class MonsterView : EditorWindow
             _serializedObj.Update();
 
             var id = _serializedObj.FindProperty("id");
-            id.stringValue = "monster_" + formatID;
+            id.stringValue = "actor_" + formatID;
 
             string path = AssetDatabase.GetAssetPath(loot);
             Debug.Log($"OldPath: {path}");
