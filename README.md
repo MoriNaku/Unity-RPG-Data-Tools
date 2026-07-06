@@ -8,6 +8,8 @@ The project focuses on improving content creation workflows by providing searcha
 
 This project was built both as a productivity tool for future game development and as a demonstration of Unity Editor scripting, C#, object-oriented design, and scalable data architecture.
 
+This tool was extracted from an active Unity project, so some modules may reference project-specific data types. The intended structure is modular: use the Core folder plus whichever module folders are relevant, then remove or replace project-specific references as needed.
+
 ---
 
 ## Features
@@ -42,11 +44,9 @@ Base item class extended by:
 * ArmorData
 * ConsumableData
 
-### MonsterData
+### ActorData
 
-Stores monster-specific information, including abilities and loot.
-
-*(Planned to evolve into a more general ActorData base class for players, NPCs, monsters, and other actors.)*
+Stores actor-specific information, including abilities and loot.
 
 ### SkillData
 
