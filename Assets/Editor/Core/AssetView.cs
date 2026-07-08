@@ -14,15 +14,15 @@ using UnityEngine.UIElements;
 public class AssetView : EditorWindow
 {
     private List<CustomTag> tags = new();
-    private List<AbilityData> abilities = new();
-    private List<ActorData> actors = new();
-    private List<ItemData> items = new();
     private int currentTab = 0;
 
-    private List<(Button element, CustomTag data)> tTiles = new();
-    private List<(Button element, AbilityData data)> aTiles = new();
-    private List<(Button element, ActorData data)> mTiles = new();
-    private List<(Button element, ItemData data)> iTiles = new();
+    private string[] myModules = {
+        "AbilityData",
+        "ActorData",
+        "ItemData"
+    };
+
+    private List<(Button element, ScriptableObject data)> tTiles = new();
 
     private Dictionary<string, VisualElement> tabFilterContainers = new();
     private Dictionary<string, HashSet<CustomTag>> activeFilters = new();
@@ -68,6 +68,20 @@ public class AssetView : EditorWindow
         rootVisualElement.Clear();
         CreateGUI();
     }
+    private string GetCurrentTabName(TabView tabs)
+    {
+        if (tabs == null) return "";
+
+        int index = tabs.selectedTabIndex;
+
+        if (index < 0 || index >= tabs.childCount)
+            return "";
+
+        if (tabs[index] is Tab selectedTab)
+            return selectedTab.label;
+
+        return "";
+    }
     public void CreateGUI()
     {
         GatherData();
@@ -85,11 +99,26 @@ public class AssetView : EditorWindow
             {
                 currentTab = tabs.selectedTabIndex;
             }
-            ApplyAllFilters();
+
+            string currentTabName = GetCurrentTabName(tabs);
+
+            ApplyAllFilters(currentTabName);
             UpdateFilterVisuals();
         }).Every(100);
 
         root.Add(tabs);
+
+        //Core Tabs
+        var tagTab = new Tab("Tags");
+        tabs.Add(tagTab);
+
+        SetupCoreTab(tagTab,
+            tags,
+            tTiles,
+            a => TagView.Open(a),
+            a => a.icon,
+            a => a.label,
+            () => TagView.Open(null));
 
         //Generic
         for (int i = 0; i < registry.moduleList.Count; i++)
@@ -107,18 +136,6 @@ public class AssetView : EditorWindow
         }
 
         /*
-        //Tags Tab
-        var tagTab = new Tab("Tags");
-        tabs.Add(tagTab);
-
-        SetupTab(tagTab,
-            tags,
-            tTiles,
-            a => TagView.Open(a),
-            a => a.icon,
-            a => a.label,
-            () => TagView.Open(null));
-
         //Ability Tab
         var abiTab = new Tab("Abilities");
         tabs.Add(abiTab);
@@ -163,12 +180,9 @@ public class AssetView : EditorWindow
         RestoreFilterState();
     }
 
-    private void ApplyAllFilters()
+    private void ApplyAllFilters(string tabName)
     {
-        ApplyFilters(tTiles);
-        ApplyFilters(aTiles);
-        ApplyFilters(mTiles);
-        ApplyFilters(iTiles);
+        ApplyFilters(tabName, tTiles);
     }
     private void GatherData()
     {
@@ -221,13 +235,26 @@ public class AssetView : EditorWindow
             }
             masterList.Add(i, assets);
         }
-        /*
+
+        //Core Information
         string[] guidsT = AssetDatabase.FindAssets("t:CustomTag", new[] { "Assets/Data/Tags" });
+
+        tags = new List<CustomTag>();
+        foreach (string guid in guidsT)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            CustomTag tag = AssetDatabase.LoadAssetAtPath<CustomTag>(path);
+
+            if (tag != null)
+            {
+                tags.Add(tag);
+            }
+        }
+        /*
         string[] guidsA = AssetDatabase.FindAssets("t:AbilityData", new[] { "Assets/Data/Abilities" });
         string[] guidsM = AssetDatabase.FindAssets("t:ActorData", new[] { "Assets/Data/Actors" });
         string[] guidsI = AssetDatabase.FindAssets("t:ItemData", new[] { "Assets/Data/Items" });
 
-        tags = new List<CustomTag>();
         abilities = new List<AbilityData>();
         actors = new List<ActorData>();
         items = new List<ItemData>();
@@ -289,7 +316,7 @@ public class AssetView : EditorWindow
         search.RegisterValueChangedCallback(evt =>
         {
             searchText = evt.newValue;
-            ApplyFilters(tileList);
+            ApplyFilters(tab.label, tileList);
         });
         searchContainer.Add(search);
 
@@ -308,8 +335,11 @@ public class AssetView : EditorWindow
             optionContainer.style.display = optionContainer.style.display == DisplayStyle.None ? DisplayStyle.Flex : DisplayStyle.None;
         });
         filter.text = "Filter Options";
-        //searchContainer.Add(filter);
-        //tab.Add(optionContainer);
+        if(info.usesTagFiltering)
+        {
+            searchContainer.Add(filter);
+            tab.Add(optionContainer);
+        }
 
         //Main Area
         var container = new VisualElement();
@@ -364,7 +394,7 @@ public class AssetView : EditorWindow
         if(info.usesCustomView)
             container.Add(add);
     }
-    private void SetupTabOld<T>(Tab tab, List<T> data, List<(Button element, T data)> tileList, Action<T> onClick, Func<T, Sprite> getIcon, Func<T, string> getLabel, Action onCreate) where T : EntityData
+    private void SetupCoreTab<T>(Tab tab, List<T> data, List<(Button element, ScriptableObject data)> tileList, Action<T> onClick, Func<T, Sprite> getIcon, Func<T, string> getLabel, Action onCreate) where T : EntityData
     {
         tileList.Clear();
         if (!activeFilters.ContainsKey(tab.label))
@@ -387,7 +417,7 @@ public class AssetView : EditorWindow
         search.RegisterValueChangedCallback(evt =>
         {
             searchText = evt.newValue;
-            ApplyFilters(tileList);
+            ApplyFilters(tab.label, tileList);
         });
         searchContainer.Add(search);
 
@@ -413,7 +443,7 @@ public class AssetView : EditorWindow
         {
             var filterTile = CreateFilterTile(tag.icon,
                 tag.label,
-                () => ToggleFilter(tileList, tag));
+                () => ToggleFilter(tab.label, tileList, tag));
             optionContainer.Add(filterTile);
             filterBtns[tab.label].Add((filterTile, tag));
         }
@@ -455,7 +485,7 @@ public class AssetView : EditorWindow
         add.style.marginTop = 4;
         container.Add(add);
     }
-    private void ToggleFilter<T>(List<(Button element, T data)> list, CustomTag tag) where T : EntityData
+    private void ToggleFilter(string tabName, List<(Button element, ScriptableObject data)> list, CustomTag tag)
     {
         if (tag == null) return;
 
@@ -488,7 +518,7 @@ public class AssetView : EditorWindow
         }
 
         UpdateFilterVisuals();
-        ApplyFilters(list);
+        ApplyFilters(tabName, list);
     }
     private bool MatchesSearch<T>(T data) where T : ScriptableObject
     {
@@ -496,68 +526,33 @@ public class AssetView : EditorWindow
 
         return data.name.ToLower().Contains(searchText.ToLower());
     }
-    private bool MatchesTags<T>(T data) where T : EntityData
+    private bool MatchesTags(string tabName, ScriptableObject data)
     {
-        switch(currentTab)
+        if (!activeFilters.ContainsKey(tabName)) return true;
+
+        if (activeFilters[tabName].Count == 0) return true;
+
+        if (data is not EntityData entity) return false;
+
+        if (entity.tagList == null) return false;
+
+        foreach (var tag in activeFilters[tabName])
         {
-            case 0:
-                if (activeFilters["Tags"].Count == 0) return true;
-
-                if (data.tagList == null) return false;
-
-                foreach (var tag in activeFilters["Tags"])
-                {
-                    if (!data.tagList.Contains(tag)) return false;
-                }
-                break;
-            case 1:
-                if (activeFilters["Abilities"].Count == 0) return true;
-
-                if (data.tagList == null) return false;
-
-                foreach (var tag in activeFilters["Abilities"])
-                {
-                    if (!data.tagList.Contains(tag)) return false;
-                }
-                break;
-            case 2:
-                if (activeFilters["Actors"].Count == 0) return true;
-
-                if (data.tagList == null) return false;
-
-                foreach (var tag in activeFilters["Actors"])
-                {
-                    if (!data.tagList.Contains(tag)) return false;
-                }
-                break;
-            case 3:
-                if (activeFilters["Items"].Count == 0) return true;
-
-                if (data.tagList == null) return false;
-
-                foreach (var tag in activeFilters["Items"])
-                {
-                    if (!data.tagList.Contains(tag)) return false;
-                }
-                break;
+            if (!entity.tagList.Contains(tag)) return false;
         }
 
         return true;
     }
-    private void ApplyFilters<T>(List<(Button element, T data)> list) where T : ScriptableObject
+    private void ApplyFilters(string tabName, List<(Button element, ScriptableObject data)> list)
     {
         var search = string.IsNullOrEmpty(searchText) ? "" :
             searchText.ToLower();
 
-        foreach((Button element, T data) in list)
+        foreach((Button element, ScriptableObject data) in list)
         {
-            bool match = MatchesSearch(data);
-            //bool match = (MatchesSearch(data) && MatchesTags(data));
-
-            if (!match)
-                element.style.display = DisplayStyle.None;
-            else
-                element.style.display = DisplayStyle.Flex;
+            bool match = (MatchesSearch(data) && MatchesTags(tabName, data));
+            
+            element.style.display = match ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
     private void RestoreFilterState()

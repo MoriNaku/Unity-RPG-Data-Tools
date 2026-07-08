@@ -13,27 +13,24 @@ MonoBehaviour:
   m_Name: New Core Data Registry
   m_EditorClassIdentifier: Assembly-CSharp-Editor::CoreDataRegistry
   moduleList:
-  - tabName: Tags
-    displayName: Tag
-    dataPath: Assets/Data/Tags
-    moduleType: {fileID: 11500000, guid: 9010bce5011bea5479fe5a2cc745b600, type: 3}
-    viewType: {fileID: 11500000, guid: ade833b1545818b4f9ace7899d4db4da, type: 3}
-    usesCustomView: 1
   - tabName: Abilities
     displayName: Ability
     dataPath: Assets/Data/Abilities
     moduleType: {fileID: 11500000, guid: 88b93bcdb42c2bf47986cda841a1b041, type: 3}
     viewType: {fileID: 11500000, guid: 662a344391a0b8e42b612ac4320a9cd4, type: 3}
     usesCustomView: 1
+    usesTagFiltering: 1
   - tabName: Actors
     displayName: Actor
     dataPath: Assets/Data/Actors
     moduleType: {fileID: 11500000, guid: 2864206ff69ba85419002bea0e33f7ce, type: 3}
     viewType: {fileID: 11500000, guid: 04b5cc051083a0246aba0de82af5e8d2, type: 3}
     usesCustomView: 1
+    usesTagFiltering: 1
   - tabName: Items
     displayName: Item
     dataPath: Assets/Data/Items
     moduleType: {fileID: 11500000, guid: 8f78ac5c0ea8e9e49a71230454577afe, type: 3}
     viewType: {fileID: 11500000, guid: e07d27a77594cb2488f986e7d09c7d71, type: 3}
     usesCustomView: 1
+    usesTagFiltering: 1

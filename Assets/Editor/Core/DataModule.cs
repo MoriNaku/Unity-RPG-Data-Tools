@@ -11,4 +11,5 @@ public class DataModule
     public MonoScript moduleType;
     public MonoScript viewType;
     public bool usesCustomView;
+    public bool usesTagFiltering;
 }
