@@ -139,4 +139,3 @@ This project serves as both a production tool for future game development and a 
   * UseCustomView setting
 * Implemented reflection-based support for launching custom editor windows without introducing direct dependencies between the Core Module and individual editor modules.
 * Generic ScriptableObject types can now be displayed and browsed through the Core window, while modules with custom views retain their existing create and edit workflows.
-* Removed tag filtering functionality from the Core Module to support the Custom Tags system as an independent optional module, reducing inter-module dependencies and improving overall modularity.
