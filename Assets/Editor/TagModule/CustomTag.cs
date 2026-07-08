@@ -11,7 +11,6 @@ public enum TagType
 [CreateAssetMenu(menuName = "Custom/Tag")]
 public class CustomTag : EntityData
 {
-    public Sprite icon;
     public TagType category;
 
     public override VisualElement GetVisuals(Action action, Action del_action, bool delete = false)

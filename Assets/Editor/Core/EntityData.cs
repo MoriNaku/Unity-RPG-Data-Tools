@@ -7,6 +7,7 @@ public abstract class EntityData : ScriptableObject
 {
     public string id;
     public string label;
+    public Sprite icon;
     public List<CustomTag> manualTags = new();
     public List<CustomTag> tagList = new();
 

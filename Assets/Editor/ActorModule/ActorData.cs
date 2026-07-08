@@ -7,7 +7,6 @@ using UnityEngine.UIElements;
 public class ActorData : EntityData
 {
     public string desc;
-    public Sprite icon;
     public List<AbilityData> abilities;
     public LootTableData lootTable;
 

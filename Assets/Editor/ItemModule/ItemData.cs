@@ -27,7 +27,6 @@ public enum ItemType
 public abstract class ItemData : EntityData
 {
     public string desc;
-    public Sprite icon;
     [Filterable] public ItemType itemType;
     
     [SerializeReference] public List<Effect> effects;

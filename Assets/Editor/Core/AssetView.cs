@@ -29,6 +29,34 @@ public class AssetView : EditorWindow
     private Dictionary<string, List<(Button element, CustomTag data)>> filterBtns = new();
     private string searchText = "";
 
+    public CoreDataRegistry registry = null;
+    private Dictionary<int, List<ScriptableObject>> masterList = new();
+
+    public Type GetScriptableObjectType(MonoScript script)
+    {
+        if (script == null) return null;
+
+        Type type = script.GetClass();
+
+        if(type == null) return null;
+
+        if (!typeof(ScriptableObject).IsAssignableFrom(type))
+        {
+            Debug.LogWarning($"{type.Name} is not a ScriptableObject!");
+            return null;
+        }
+
+        return type;
+    }
+
+    public static void RefreshOpenWindows()
+    {
+        foreach(var window in Resources.FindObjectsOfTypeAll<AssetView>())
+        {
+            window.CreateGUI();
+        }
+    }
+
     [MenuItem("Window/UI Toolkit/AssetView")]
     public static void ShowExample()
     {
@@ -63,6 +91,22 @@ public class AssetView : EditorWindow
 
         root.Add(tabs);
 
+        //Generic
+        for (int i = 0; i < registry.moduleList.Count; i++)
+        {
+            if (!masterList.ContainsKey(i)) continue;
+            List<ScriptableObject> assets = masterList[i];
+            var tab = new Tab(registry.moduleList[i].tabName);
+            tabs.Add(tab);
+
+            SetupTab(tab,
+                registry.moduleList[i],
+                assets,
+                new List<(Button button, ScriptableObject data)>(),
+                a => a.name);
+        }
+
+        /*
         //Tags Tab
         var tagTab = new Tab("Tags");
         tabs.Add(tagTab);
@@ -113,6 +157,7 @@ public class AssetView : EditorWindow
             a => a.label,
             () => ItemView.Open(null)
         );
+        */
 
         tabs.selectedTabIndex = currentTab;
         RestoreFilterState();
@@ -127,6 +172,56 @@ public class AssetView : EditorWindow
     }
     private void GatherData()
     {
+        masterList.Clear();
+
+        if (registry == null)
+        {
+            string[] found = AssetDatabase.FindAssets("t:CoreDataRegistry");
+            if(found.Length > 0)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(found[0]);
+                registry = AssetDatabase.LoadAssetAtPath<CoreDataRegistry>(path);
+            }
+
+            if(registry == null)
+            {
+                Debug.LogWarning("No CoreDataRegistry found.");
+                return;
+            }
+            if(registry.moduleList.Count > 0 || registry.moduleList == null)
+            {
+                Debug.LogWarning("Add Modules to Registry Before Proceeding!");
+                return;
+            }
+        }
+
+        for (int i = 0; i < registry.moduleList.Count; i++)
+        {
+            DataModule module = registry.moduleList[i];
+            if (module == null) continue;
+            if (module.moduleType == null) continue;
+            if (string.IsNullOrEmpty(module.dataPath)) continue;
+
+            Type type = GetScriptableObjectType(module.moduleType);
+            if (type == null) continue;
+
+            string[] guids = AssetDatabase.FindAssets($"t:{type.Name}", new[] { module.dataPath });
+
+            List<ScriptableObject> assets = new();
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+
+                ScriptableObject asset = AssetDatabase.LoadAssetAtPath(path, type) as ScriptableObject;
+
+                if (asset != null)
+                {
+                    assets.Add(asset);
+                }
+            }
+            masterList.Add(i, assets);
+        }
+        /*
         string[] guidsT = AssetDatabase.FindAssets("t:CustomTag", new[] { "Assets/Data/Tags" });
         string[] guidsA = AssetDatabase.FindAssets("t:AbilityData", new[] { "Assets/Data/Abilities" });
         string[] guidsM = AssetDatabase.FindAssets("t:ActorData", new[] { "Assets/Data/Actors" });
@@ -175,8 +270,101 @@ public class AssetView : EditorWindow
             if (item != null)
                 items.Add(item);
         }
+        */
     }
-    private void SetupTab<T>(Tab tab, List<T> data, List<(Button element, T data)> tileList, Action<T> onClick, Func<T, Sprite> getIcon, Func<T, string> getLabel, Action onCreate) where T : EntityData
+    private void SetupTab(Tab tab, DataModule info, List<ScriptableObject> data, List<(Button button, ScriptableObject data)> tileList, Func<ScriptableObject, string> getLabel)
+    {
+        tileList.Clear();
+
+        tab.contentContainer.style.flexDirection = FlexDirection.Column;
+        tab.contentContainer.style.flexGrow = 1;
+
+        //Search Section
+        var searchContainer = new VisualElement();
+        searchContainer.style.flexDirection = FlexDirection.Row;
+        tab.Add(searchContainer);
+
+        var search = new ToolbarSearchField();
+        search.style.flexGrow = 1;
+        search.RegisterValueChangedCallback(evt =>
+        {
+            searchText = evt.newValue;
+            ApplyFilters(tileList);
+        });
+        searchContainer.Add(search);
+
+        //Filterable Options
+        var optionContainer = new VisualElement();
+        optionContainer.style.flexDirection = FlexDirection.Row;
+        optionContainer.style.flexWrap = Wrap.Wrap;
+        optionContainer.style.display = DisplayStyle.None;
+        if (!tabFilterContainers.ContainsKey(tab.label))
+            tabFilterContainers.Add(tab.label, optionContainer);
+        else
+            tabFilterContainers[tab.label] = optionContainer;
+
+        var filter = new Button(() =>
+        {
+            optionContainer.style.display = optionContainer.style.display == DisplayStyle.None ? DisplayStyle.Flex : DisplayStyle.None;
+        });
+        filter.text = "Filter Options";
+        //searchContainer.Add(filter);
+        //tab.Add(optionContainer);
+
+        //Main Area
+        var container = new VisualElement();
+        container.style.flexDirection = FlexDirection.Column;
+        container.style.flexGrow = 1;
+        container.style.minHeight = 0;
+        tab.Add(container);
+
+        var scroll = new ScrollView();
+        scroll.style.flexGrow = 1;
+        container.Add(scroll);
+
+        var list = new VisualElement();
+        list.style.flexDirection = FlexDirection.Row;
+        list.style.flexWrap = Wrap.Wrap;
+        scroll.Add(list);
+
+        Type viewType = info.viewType.GetClass();
+        MethodInfo openMethod = viewType.GetMethod(
+            "Open",
+            BindingFlags.Public | BindingFlags.Static);
+
+        foreach (var item in data)
+        {
+            if (item is EntityData entity)
+            {
+                var tile = CreateTile(
+                    entity.icon,
+                    entity.label,
+                    () => openMethod?.Invoke(null, new object[] { entity })
+                );
+                tileList.Add((tile, entity));
+
+                list.Add(tile);
+            } else
+            {
+                var tile = CreateTile(
+                    null,
+                    item.name,
+                    null);
+                tileList.Add((tile, item));
+
+                list.Add(tile);
+            }
+        }
+
+        //Buttons
+        var add = new Button(() => openMethod?.Invoke(null, new object[] { null }));
+        add.text = $"Create {info.displayName}";
+        add.style.flexShrink = 0;
+        add.style.marginTop = 4;
+        if(info.usesCustomView)
+            container.Add(add);
+    }
+    private void SetupTabOld<T>(Tab tab, List<T> data, List<(Button element, T data)> tileList, Action<T> onClick, Func<T, Sprite> getIcon, Func<T, string> getLabel, Action onCreate) where T : EntityData
     {
         tileList.Clear();
         if (!activeFilters.ContainsKey(tab.label))
@@ -302,11 +490,11 @@ public class AssetView : EditorWindow
         UpdateFilterVisuals();
         ApplyFilters(list);
     }
-    private bool MatchesSearch<T>(T data) where T : EntityData
+    private bool MatchesSearch<T>(T data) where T : ScriptableObject
     {
         if (string.IsNullOrEmpty(searchText)) return true;
 
-        return data.label.ToLower().Contains(searchText.ToLower());
+        return data.name.ToLower().Contains(searchText.ToLower());
     }
     private bool MatchesTags<T>(T data) where T : EntityData
     {
@@ -356,14 +544,15 @@ public class AssetView : EditorWindow
 
         return true;
     }
-    private void ApplyFilters<T>(List<(Button element, T data)> list) where T : EntityData
+    private void ApplyFilters<T>(List<(Button element, T data)> list) where T : ScriptableObject
     {
         var search = string.IsNullOrEmpty(searchText) ? "" :
             searchText.ToLower();
 
         foreach((Button element, T data) in list)
         {
-            bool match = (MatchesSearch(data) && MatchesTags(data));
+            bool match = MatchesSearch(data);
+            //bool match = (MatchesSearch(data) && MatchesTags(data));
 
             if (!match)
                 element.style.display = DisplayStyle.None;
