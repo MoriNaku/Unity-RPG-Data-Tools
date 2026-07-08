@@ -125,3 +125,17 @@ Planned improvements include:
 ## Purpose
 
 This project serves as both a production tool for future game development and a portfolio project demonstrating Unity Editor tooling, reusable architecture, and scalable game data management.
+
+## Update Log
+7-8-2026
+* Refactored the Core Module to use a CoreDataRegistry asset for configuration instead of hard-coded ScriptableObject types.
+* Added support for dynamically generating tabs and discovering assets based on the modules registered in the CoreDataRegistry.
+* Introduced configurable module metadata, including:
+  * Tab Name
+  * Display Name
+  * ScriptableObject Type
+  * Asset Search Path
+  * Optional Custom View
+  * UseCustomView setting
+* Implemented reflection-based support for launching custom editor windows without introducing direct dependencies between the Core Module and individual editor modules.
+* Generic ScriptableObject types can now be displayed and browsed through the Core window, while modules with custom views retain their existing create and edit workflows.
