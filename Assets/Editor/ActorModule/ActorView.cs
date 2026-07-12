@@ -11,15 +11,13 @@ using UnityEngine;
 using UnityEngine.UIElements;
 public class ActorView : EditorWindow
 {
-    private List<CustomTag> allTags;
-    private List<AbilityData> allAbilities;
-    private List<AbilityData> currentAbilities = new();
     private Dictionary<string, List<CustomTag>> currentTags = new();
     private LootTableData loot;
 
-    private ScrollView abilityList;
-    private ScrollView currentAbilityList;
-    private ScrollView tagLeft;
+    private List<DisplayerCore> displayers = new();
+    private List<EntityModule> currentModules = new();
+    private SerializedProperty _modProp;
+
     private VisualElement lootView;
     private TextField _label;
     private TextField _desc;
@@ -31,10 +29,10 @@ public class ActorView : EditorWindow
     private SerializedProperty _labelProp;
     private SerializedProperty _descProp;
     private SerializedProperty _iconProp;
-    private SerializedProperty _abilitiesProp;
     private SerializedProperty _tagProp;
     private SerializedProperty _lootProp;
 
+    
     private void OnSelectionChange()
     {
         if (Selection.activeObject is ActorData data)
@@ -48,8 +46,9 @@ public class ActorView : EditorWindow
         if (_obj == null || _serializedObj == null)
         {
             currentTags = new();
-            currentAbilities = new();
+            currentModules = new();
         }
+        RefreshDisplayers();
         CreateGUI();
     }
     public static void Open(ActorData data)
@@ -60,6 +59,8 @@ public class ActorView : EditorWindow
     }
     private void SetData(ActorData data)
     {
+        displayers.Clear();
+        displayers.Add(new TagDisplayer(new TagModule()));
         _obj = data;
 
         if (_obj != null)
@@ -67,38 +68,46 @@ public class ActorView : EditorWindow
             currentTags = new();
             currentTags.Add("auto", new());
             currentTags.Add("manual", new());
-            foreach (var auto in _obj.tagList)
+            foreach (var auto in _obj.tags.auto)
             {
                 currentTags["auto"].Add(auto);
             }
-            foreach (var manual in _obj.manualTags)
+            foreach (var manual in _obj.tags.manual)
             {
                 currentTags["manual"].Add(manual);
             }
-            currentAbilities = _obj.abilities ?? new List<AbilityData>();
+
+            displayers.Clear();
+            displayers.Add(new TagDisplayer(_obj.tags));
+            foreach (EntityModule e in _obj.modules)
+            {
+                displayers.Add(DisplayerCore.GetDisplayer(e));
+            }
+            currentModules = _obj.modules ?? new List<EntityModule>();
+
             loot = _obj.lootTable ?? ScriptableObject.CreateInstance<LootTableData>();
             _serializedObj = new SerializedObject(_obj);
             _labelProp = _serializedObj.FindProperty("label");
             _descProp = _serializedObj.FindProperty("desc");
             _iconProp = _serializedObj.FindProperty("icon");
-            _abilitiesProp = _serializedObj.FindProperty("abilities");
-            _tagProp = _serializedObj.FindProperty("tagList");
+            _tagProp = _serializedObj.FindProperty("tags");
             _lootProp = _serializedObj.FindProperty("lootTable");
+            _modProp = _serializedObj.FindProperty("modules");
         }
         else
         {
             currentTags = new();
             currentTags.Add("auto", new());
             currentTags.Add("manual", new());
-            currentAbilities = new List<AbilityData>();
+            currentModules = new();
             loot = ScriptableObject.CreateInstance<LootTableData>();
             _serializedObj = null;
             _labelProp = null;
             _descProp = null;
             _iconProp = null;
-            _abilitiesProp = null;
             _tagProp = null;
             _lootProp = null;
+            _modProp = null;
 
             var path = AssetDatabase.GenerateUniqueAssetPath("Assets/Data/Loot Tables/lootTable_.asset");
             AssetDatabase.CreateAsset(loot, path);
@@ -130,42 +139,12 @@ public class ActorView : EditorWindow
         ActorView wnd = GetWindow<ActorView>();
         wnd.titleContent = new GUIContent("ActorView");
     }
-    private void GatherTags()
-    {
-        string[] guidsT = AssetDatabase.FindAssets("t:CustomTag", new[] { "Assets/Data/Tags" });
-        allTags = new List<CustomTag>();
-        foreach (string guid in guidsT)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            CustomTag tag = AssetDatabase.LoadAssetAtPath<CustomTag>(path);
-
-            if (tag != null)
-            {
-                allTags.Add(tag);
-            }
-        }
-    }
     public void CreateGUI()
     {
         if (!(currentTags.Keys.Count > 0))
         {
             currentTags.Add("auto", new());
             currentTags.Add("manual", new());
-        }
-        GatherTags();
-        string[] guids = AssetDatabase.FindAssets("t:AbilityData", new[] { "Assets/Data/Abilities" });
-
-        allAbilities = new List<AbilityData>();
-
-        foreach (string guid in guids)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            AbilityData ability = AssetDatabase.LoadAssetAtPath<AbilityData>(path);
-
-            if (ability != null)
-            {
-                allAbilities.Add(ability);
-            }
         }
 
         rootVisualElement.Clear();
@@ -231,44 +210,28 @@ public class ActorView : EditorWindow
         descRight.Add(_preview);
         descRight.Add(_icon);
 
-        //Tags
-        var splitViewT = new TwoPaneSplitView(0, 315, TwoPaneSplitViewOrientation.Horizontal);
-        splitViewT.style.flexGrow = 1;
-        infoView.Add(splitViewT);
-
-        tagLeft = new ScrollView();
-        if (currentTags.Keys.Count > 0)
+        // Displayers
+        foreach(var d in displayers)
         {
-            for (var i = 0; i < currentTags["auto"].Count; i++)
+            VisualElement moduleView = d.CraftView();
+
+            if (d.Module != null &&
+                d.Module is not TagModule)
             {
-                var tag = currentTags["auto"][i];
-                tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), null, false));
+                var removeButton = new Button(
+                    () => RemoveModule(d.Module))
+                {
+                    text = $"Remove {GetModuleDisplayName(d.Module.GetType())} Module"
+                };
+
+                moduleView.Add(removeButton);
             }
-            for (int i = 0; i < currentTags["manual"].Count; i++)
-            {
-                var tag = currentTags["manual"][i];
-                int index = i;
-                tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), () => RemoveTagAt(index), true));
-            }
-        }
-        splitViewT.Add(tagLeft);
 
-
-        var tagRight = new VisualElement();
-        tagRight.style.flexDirection = FlexDirection.Row;
-        tagRight.style.flexWrap = Wrap.Wrap;
-        tagRight.style.paddingLeft = 4;
-        tagRight.style.paddingBottom = 4;
-        tagRight.style.paddingTop = 4;
-        splitViewT.Add(tagRight);
-
-        foreach (var tag in allTags)
-        {
-            tagRight.Add(tag.GetVisuals(() => AddTag(tag), null, false));
+            infoView.Add(moduleView);
         }
 
         //Loot Table
-        if(loot == null)
+        if (loot == null)
         {
             loot = ScriptableObject.CreateInstance<LootTableData>();
         }
@@ -283,47 +246,7 @@ public class ActorView : EditorWindow
             lootView.Add(item.GetVisuals(() => ItemView.Open(item.item)));
         }
 
-        //Current Ability List
-        var currentLabel = new Label();
-        currentLabel.text = "Known Abilities";
-        currentLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-        currentLabel.style.fontSize = 18;
-        infoView.Add(currentLabel);
-
-        currentAbilityList = new ScrollView();
-        currentAbilityList.contentContainer.style.flexDirection = FlexDirection.Row;
-        currentAbilityList.contentContainer.style.flexWrap = Wrap.Wrap;
-        currentAbilityList.contentContainer.style.paddingLeft = 4;
-        currentAbilityList.contentContainer.style.paddingRight = 4;
-        currentAbilityList.contentContainer.style.paddingTop = 4;
-        infoView.Add(currentAbilityList);
-
-        for (int i = 0; i < currentAbilities.Count; i++)
-        {
-            currentAbilityList.Add(CreateAbilityList(currentAbilities[i], i));
-        }
-
-        if(currentAbilities.Count < 1)
-        {
-            currentAbilityList.Add(new Label("None"));
-        }
-
-        //All Abilities View
-        var allAbilitiesLabel = new Label();
-        allAbilitiesLabel.text = "All Abilities";
-        allAbilitiesLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-        allAbilitiesLabel.style.fontSize = 18;
-        infoView.Add(allAbilitiesLabel);
-
-        abilityList = new ScrollView();
-        abilityList.contentContainer.style.flexDirection = FlexDirection.Row;
-        abilityList.contentContainer.style.flexWrap = Wrap.Wrap;
-        abilityList.contentContainer.style.paddingLeft = 4;
-        abilityList.contentContainer.style.paddingRight = 4;
-        abilityList.contentContainer.style.paddingTop = 4;
-        infoView.Add(abilityList);
-
-        PopulateAbilities(abilityList);
+        infoView.Add(CreateAddModuleButton());
 
         //Buttons
         var splitViewB = new TwoPaneSplitView(0, 315, TwoPaneSplitViewOrientation.Horizontal);
@@ -340,198 +263,162 @@ public class ActorView : EditorWindow
         close.text = "Close";
         splitViewB.Add(close);
     }
-    private void AddTag(CustomTag data)
-    {
-        if (_obj == null || _serializedObj == null) return;
-
-        _serializedObj.Update();
-
-        var tagProp = _serializedObj.FindProperty("manualTags");
-
-        for (int i = 0; i < tagProp.arraySize; i++)
-        {
-            var element = tagProp.GetArrayElementAtIndex(i);
-            if (element.objectReferenceValue == data)
-            {
-                return;
-            }
-        }
-
-        int index = tagProp.arraySize;
-        tagProp.InsertArrayElementAtIndex(index);
-
-        var newElement = tagProp.GetArrayElementAtIndex(index);
-        newElement.objectReferenceValue = data;
-
-        _serializedObj.ApplyModifiedProperties();
-        EditorUtility.SetDirty(_obj);
-        AssetDatabase.SaveAssets();
-
-        RefreshCurrentTags();
-    }
-    private void RemoveTagAt(int index)
-    {
-        _serializedObj.Update();
-        _obj.tagList.RemoveAt(index);
-        _serializedObj.ApplyModifiedProperties();
-
-        RefreshCurrentTags();
-    }
-    private void RefreshCurrentTags()
-    {
-        tagLeft.Clear();
-        foreach (var kvp in currentTags)
-        {
-            Debug.Log($"Key: {kvp.Key}");
-        }
-        currentTags["auto"].Clear();
-        currentTags["manual"].Clear();
-
-        if (_obj != null)
-        {
-            foreach (var autoT in _obj.tagList)
-            {
-                currentTags["auto"].Add(autoT);
-            }
-            foreach (var manual in _obj.manualTags)
-            {
-                currentTags["manual"].Add(manual);
-            }
-        }
-
-        if (currentTags.Keys.Count > 0)
-        {
-            for (var i = 0; i < currentTags["auto"].Count; i++)
-            {
-                var tag = currentTags["auto"][i];
-                tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), null, false));
-            }
-            for (int i = 0; i < currentTags["manual"].Count; i++)
-            {
-                var tag = currentTags["manual"][i];
-                var index = i;
-                tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), () => RemoveTagAt(index), true));
-            }
-        }
-    }
-    private VisualElement CreateAbilityList(AbilityData data, int index)
-    {
-        var button = new Button(() => AbilityView.Open(data));
-        button.style.width = 88;
-        button.style.height = 88;
-        button.style.marginRight = 6;
-        button.style.marginBottom = 6;
-        button.style.alignItems = Align.Center;
-        button.style.justifyContent = Justify.Center;
-        button.style.flexDirection = FlexDirection.Column;
-
-        var icon = new Image();
-        if (data.icon == null)
-        {
-            icon.image = null;
-        }
-        else
-        {
-            icon.image = data.icon?.texture;
-        }
-        icon.scaleMode = ScaleMode.ScaleToFit;
-        icon.style.width = 40;
-        icon.style.height = 40;
-        icon.style.marginBottom = 4;
-
-        var label = new Label(data.label);
-        label.style.unityTextAlign = TextAnchor.MiddleCenter;
-        label.style.whiteSpace = WhiteSpace.Normal;
-        label.style.fontSize = 10;
-
-        var del = new Button(() => RemoveAbilityAt(index));
-        del.style.width = 80;
-        del.style.height = 16;
-        del.text = "Delete";
-
-        button.Add(icon);
-        button.Add(label);
-        button.Add(del);
-
-        return button;
-    }
-    private void PopulateAbilities(VisualElement list)
-    {
-        foreach (var a in allAbilities)
-        {
-            var button = new Button(() => AddAbility(a));
-            button.style.width = 88;
-            button.style.height = 88;
-            button.style.marginRight = 6;
-            button.style.marginBottom = 6;
-            button.style.alignItems = Align.Center;
-            button.style.justifyContent = Justify.Center;
-            button.style.flexDirection = FlexDirection.Column;
-
-            var icon = new Image();
-            if (a.icon != null)
-                icon.image = a.icon.texture;
-            icon.scaleMode = ScaleMode.ScaleToFit;
-            icon.style.width = 40;
-            icon.style.height = 40;
-            icon.style.marginBottom = 4;
-
-            var label = new Label(a.name);
-            label.style.unityTextAlign = TextAnchor.MiddleCenter;
-            label.style.whiteSpace = WhiteSpace.Normal;
-            label.style.fontSize = 10;
-
-            button.Add(icon);
-            button.Add(label);
-
-            list.Add(button);
-        }
-    }
-    private void RemoveAbilityAt(int index)
-    {
-        _serializedObj.Update();
-        _obj.abilities.RemoveAt(index);
-        _serializedObj.ApplyModifiedProperties();
-
-        RefreshCurrentAbilities();
-    }
-    private void RefreshCurrentAbilities()
-    {
-        currentAbilityList.Clear();
-
-        if (_obj != null)
-            currentAbilities = _obj.abilities;
-
-        for (int i = 0; i < currentAbilities.Count; i++)
-        {
-            currentAbilityList.Add(CreateAbilityList(currentAbilities[i], i));
-        }
-    }
     private void UpdateIconPreview(Sprite sprite)
     {
         _preview.image = sprite != null ? sprite.texture : null;
     }
-    private void AddAbility(AbilityData data)
+
+    //Module Functions
+    private List<Type> GetAvailableModuleTypes()
     {
-        if (_obj == null || _serializedObj == null || data == null)
+        return TypeCache.GetTypesDerivedFrom<EntityModule>()
+        .Where(type =>
+            !type.IsAbstract &&
+            !type.IsGenericType &&
+            type != typeof(TagModule) &&
+            type.GetConstructor(Type.EmptyTypes) != null)
+        .OrderBy(type => type.Name)
+        .ToList();
+    }
+    private string GetModuleDisplayName(Type moduleType)
+    {
+        string name = moduleType.Name;
+
+        if (name.EndsWith("Module"))
+            name = name[..^"Module".Length];
+
+        return ObjectNames.NicifyVariableName(name);
+    }
+    private VisualElement CreateAddModuleButton()
+    {
+        var button = new Button
+        {
+            text = "Add Module"
+        };
+
+        button.clicked += () =>
+        {
+            GenericMenu menu = new GenericMenu();
+
+            foreach (Type moduleType in GetAvailableModuleTypes())
+            {
+                
+                Type capturedType = moduleType;
+                bool alreadyAdded = HasModule(capturedType);
+
+                if (alreadyAdded)
+                {
+                    menu.AddDisabledItem(
+                        new GUIContent(GetModuleDisplayName(capturedType)));
+                }
+                else
+                {
+                    menu.AddItem(
+                        new GUIContent(GetModuleDisplayName(capturedType)),
+                        false,
+                        () => AddModule(capturedType));
+                }
+            }
+
+            menu.ShowAsContext();
+        };
+        button.SetEnabled(_obj != null);
+
+        return button;
+    }
+    private void AddModule(Type moduleType)
+    {
+        if (_obj == null || _serializedObj == null)
             return;
 
         _serializedObj.Update();
 
-        int index = _abilitiesProp.arraySize;
-        _abilitiesProp.InsertArrayElementAtIndex(index);
+        if (_modProp == null)
+        {
+            Debug.LogError(
+                $"Could not find the modules property on {_obj.name}.");
 
-        var newElement = _abilitiesProp.GetArrayElementAtIndex(index);
+            return;
+        }
 
-        // Copy the configured draft object into the real ability list
-        newElement.objectReferenceValue = data;
+        if (HasModule(moduleType))
+            return;
+
+        int index = _modProp.arraySize;
+        _modProp.InsertArrayElementAtIndex(index);
+
+        SerializedProperty newModule =
+            _modProp.GetArrayElementAtIndex(index);
+
+        newModule.managedReferenceValue =
+            Activator.CreateInstance(moduleType);
 
         _serializedObj.ApplyModifiedProperties();
+
         EditorUtility.SetDirty(_obj);
         AssetDatabase.SaveAssets();
 
-        RefreshCurrentAbilities();
+        RefreshDisplayers();
     }
+    private bool HasModule(Type moduleType)
+    {
+        return _obj.modules.Any(m => m.GetType() == moduleType);
+    }
+    private void RefreshDisplayers()
+    {
+        displayers.Clear();
+
+        // Core module
+        displayers.Add(new TagDisplayer(_obj.tags));
+
+        // Optional modules
+        foreach (EntityModule module in currentModules)
+        {
+            Debug.Log($"Module Name: {module.GetType().FullName}");
+            displayers.Add(DisplayerCore.GetDisplayer(module));
+        }
+
+        foreach(var d in displayers)
+        {
+            Debug.Log($"Displayer Name: {d.GetType().FullName}");
+        }
+
+        rootVisualElement.Clear();
+        CreateGUI();
+    }
+    private void RemoveModule(EntityModule module)
+    {
+        if (!EditorUtility.DisplayDialog(
+            "Remove Module",
+            $"Are you sure you want to remove the {GetModuleDisplayName(module.GetType())} module?\n\n{module.RemoveWarning}",
+            "Remove",
+            "Cancel"))
+        {
+            return;
+        }
+
+        _serializedObj.Update();
+
+        for (int i = 0; i < _modProp.arraySize; i++)
+        {
+            SerializedProperty element = _modProp.GetArrayElementAtIndex(i);
+
+            if (ReferenceEquals(element.managedReferenceValue, module))
+            {
+                _modProp.DeleteArrayElementAtIndex(i);
+                break;
+            }
+        }
+        currentModules.Remove(module);
+
+        _serializedObj.ApplyModifiedProperties();
+
+        EditorUtility.SetDirty(_obj);
+        AssetDatabase.SaveAssets();
+
+        RefreshDisplayers();
+    }
+
     private void SaveInfo()
     {
         var formatID = _label.value;
@@ -545,8 +432,9 @@ public class ActorView : EditorWindow
             data.label = _label.value;
             data.desc = _desc.value;
             data.icon = _icon.value as Sprite;
-            data.abilities = currentAbilities;
+            //data.abilities = currentAbilities;
             data.lootTable = loot;
+            data.modules = currentModules;
 
             data.lootTable.id = $"lootTable_{formatID}";
             data.lootTable.label = $"Loot Table ({_label.value})";
@@ -573,7 +461,7 @@ public class ActorView : EditorWindow
 
             string uniqueName = Path.GetFileNameWithoutExtension(newPath);
             Debug.Log($"UniqueName: {uniqueName}");
-            AssetDatabase.RenameAsset(path,uniqueName);
+            AssetDatabase.RenameAsset(path, uniqueName);
 
             _serializedObj.ApplyModifiedProperties();
             EditorUtility.SetDirty(_obj);

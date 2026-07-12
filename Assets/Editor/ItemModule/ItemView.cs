@@ -11,12 +11,14 @@ using UnityEngine;
 using UnityEngine.UIElements;
 public class ItemView : EditorWindow
 {
-    private List<CustomTag> allTags;
     private List<Type> allEffectTypes;
     private ScrollView effectList;
     private ScrollView currentEffectList;
     private VisualElement abilityRight;
-    private ScrollView tagLeft;
+
+    private List<DisplayerCore> displayers = new();
+    private List<EntityModule> currentModules = new();
+    private SerializedProperty _modProp;
 
     private ItemData _obj;
     private SerializedObject _serializedObj;
@@ -36,7 +38,7 @@ public class ItemView : EditorWindow
     private Image _preview;
     private UnityEditor.UIElements.ObjectField _icon;
     private List<Effect> currentEffects = new();
-    private List<CustomTag> currentTags = new();
+    private Dictionary<string, List<CustomTag>> currentTags = new();
     private IntegerField maxStack;
     private Toggle isReuse;
     private EnumField _itemType;
@@ -72,11 +74,32 @@ public class ItemView : EditorWindow
     }
     private void SetData(ItemData data)
     {
+        displayers.Clear();
+        displayers.Add(new TagDisplayer(new TagModule()));
         _obj = data;
 
         if (_obj != null)
         {
-            currentTags = _obj.tagList ?? new List<CustomTag>();
+            currentTags = new();
+            currentTags.Add("auto", new());
+            currentTags.Add("manual", new());
+            foreach (var auto in _obj.tags.auto)
+            {
+                currentTags["auto"].Add(auto);
+            }
+            foreach (var manual in _obj.tags.manual)
+            {
+                currentTags["manual"].Add(manual);
+            }
+
+            displayers.Clear();
+            displayers.Add(new TagDisplayer(_obj.tags));
+            foreach (EntityModule e in _obj.modules)
+            {
+                displayers.Add(DisplayerCore.GetDisplayer(e));
+            }
+            currentModules = _obj.modules ?? new List<EntityModule>();
+
             currentEffects = _obj.effects ?? new List<Effect>();
             _serializedObj = new SerializedObject(_obj);
             _labelProp = _serializedObj.FindProperty("label");
@@ -89,10 +112,13 @@ public class ItemView : EditorWindow
             _stackProp = _serializedObj.FindProperty("maxStack");
             _reuseProp = _serializedObj.FindProperty("isReuseable");
             _tagProp = _serializedObj.FindProperty("tagList");
+            _modProp = _serializedObj.FindProperty("modules");
         }
         else
         {
-            currentTags = new List<CustomTag>();
+            currentTags = new();
+            currentTags.Add("auto", new());
+            currentTags.Add("manual", new());
             currentEffects = new List<Effect>();
             _serializedObj = null;
             _labelProp = null;
@@ -105,6 +131,7 @@ public class ItemView : EditorWindow
             _stackProp = null;
             _reuseProp = null;
             _tagProp = null;
+            _modProp = null;
         }
 
         rootVisualElement.Clear();
@@ -131,24 +158,8 @@ public class ItemView : EditorWindow
         ItemView wnd = GetWindow<ItemView>();
         wnd.titleContent = new GUIContent("ItemView");
     }
-    private void GatherTags()
-    {
-        string[] guidsT = AssetDatabase.FindAssets("t:CustomTag", new[] { "Assets/Data/Tags" });
-        allTags = new List<CustomTag>();
-        foreach (string guid in guidsT)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            CustomTag tag = AssetDatabase.LoadAssetAtPath<CustomTag>(path);
-
-            if (tag != null)
-            {
-                allTags.Add(tag);
-            }
-        }
-    }
     public void CreateGUI()
     {
-        GatherTags();
         allEffectTypes = TypeCache.GetTypesDerivedFrom<Effect>()
             .Where(t => !t.IsAbstract && !t.IsGenericType && t.GetConstructor(Type.EmptyTypes) != null)
             .OrderBy(t => t.Name)
@@ -290,32 +301,10 @@ public class ItemView : EditorWindow
         descRight.Add(_preview);
         descRight.Add(_icon);
 
-        //Tags
-        var splitViewT = new TwoPaneSplitView(0, 315, TwoPaneSplitViewOrientation.Horizontal);
-        splitViewT.style.flexGrow = 1;
-        infoView.Add(splitViewT);
-
-        tagLeft = new ScrollView();
-        for (int i = 0; i < currentTags.Count; i++)
+        //Displayers
+        foreach(var d in displayers)
         {
-            var tag = currentTags[i];
-            var index = i;
-            tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), () => RemoveTagAt(index), true));
-        }
-        splitViewT.Add(tagLeft);
-
-
-        var tagRight = new VisualElement();
-        tagRight.style.flexDirection = FlexDirection.Row;
-        tagRight.style.flexWrap = Wrap.Wrap;
-        tagRight.style.paddingLeft = 4;
-        tagRight.style.paddingBottom = 4;
-        tagRight.style.paddingTop = 4;
-        splitViewT.Add(tagRight);
-
-        foreach (var tag in allTags)
-        {
-            tagRight.Add(tag.GetVisuals(() => AddTag(tag), null, false));
+            infoView.Add(d.CraftView());
         }
 
         //Current Effect List
@@ -358,6 +347,8 @@ public class ItemView : EditorWindow
 
         abilityRight.Add(new Label("Select an effect to view/edit"));
 
+        infoView.Add(CreateAddModuleButton());
+
         //Buttons
         var splitViewB = new TwoPaneSplitView(0, 315, TwoPaneSplitViewOrientation.Horizontal);
         splitViewB.style.maxHeight = 36;
@@ -372,57 +363,6 @@ public class ItemView : EditorWindow
         close.style.minHeight = 36;
         close.text = "Close";
         splitViewB.Add(close);
-    }
-    private void AddTag(CustomTag data)
-    {
-        if (_obj == null || _serializedObj == null) return;
-
-        _serializedObj.Update();
-
-        var tagProp = _serializedObj.FindProperty("tagList");
-
-        for (int i = 0; i < tagProp.arraySize; i++)
-        {
-            var element = tagProp.GetArrayElementAtIndex(i);
-            if (element.objectReferenceValue == data)
-            {
-                return;
-            }
-        }
-
-        int index = tagProp.arraySize;
-        tagProp.InsertArrayElementAtIndex(index);
-
-        var newElement = tagProp.GetArrayElementAtIndex(index);
-        newElement.objectReferenceValue = data;
-
-        _serializedObj.ApplyModifiedProperties();
-        EditorUtility.SetDirty(_obj);
-        AssetDatabase.SaveAssets();
-
-        RefreshCurrentTags();
-    }
-    private void RefreshCurrentTags()
-    {
-        tagLeft.Clear();
-
-        if (_obj != null)
-            currentTags = _obj.tagList;
-
-        for (int i = 0; i < currentTags.Count; i++)
-        {
-            var tag = currentTags[i];
-            var index = i;
-            tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), () => RemoveTagAt(index), true));
-        }
-    }
-    private void RemoveTagAt(int index)
-    {
-        _serializedObj.Update();
-        _obj.tagList.RemoveAt(index);
-        _serializedObj.ApplyModifiedProperties();
-
-        RefreshCurrentTags();
     }
     private VisualElement CreateIconTile(Sprite sprite, string labelText, Action onClick, string tooltip = null)
     {
@@ -584,6 +524,158 @@ public class ItemView : EditorWindow
     {
         _preview.image = sprite != null ? sprite.texture : null;
     }
+
+    //Module Functions
+    private List<Type> GetAvailableModuleTypes()
+    {
+        return TypeCache.GetTypesDerivedFrom<EntityModule>()
+        .Where(type =>
+            !type.IsAbstract &&
+            !type.IsGenericType &&
+            type != typeof(TagModule) &&
+            type.GetConstructor(Type.EmptyTypes) != null)
+        .OrderBy(type => type.Name)
+        .ToList();
+    }
+    private string GetModuleDisplayName(Type moduleType)
+    {
+        string name = moduleType.Name;
+
+        if (name.EndsWith("Module"))
+            name = name[..^"Module".Length];
+
+        return ObjectNames.NicifyVariableName(name);
+    }
+    private VisualElement CreateAddModuleButton()
+    {
+        var button = new Button
+        {
+            text = "Add Module"
+        };
+
+        button.clicked += () =>
+        {
+            GenericMenu menu = new GenericMenu();
+
+            foreach (Type moduleType in GetAvailableModuleTypes())
+            {
+
+                Type capturedType = moduleType;
+                bool alreadyAdded = HasModule(capturedType);
+
+                if (alreadyAdded)
+                {
+                    menu.AddDisabledItem(
+                        new GUIContent(GetModuleDisplayName(capturedType)));
+                }
+                else
+                {
+                    menu.AddItem(
+                        new GUIContent(GetModuleDisplayName(capturedType)),
+                        false,
+                        () => AddModule(capturedType));
+                }
+            }
+
+            menu.ShowAsContext();
+        };
+        button.SetEnabled(_obj != null);
+
+        return button;
+    }
+    private void AddModule(Type moduleType)
+    {
+        if (_obj == null || _serializedObj == null)
+            return;
+
+        _serializedObj.Update();
+
+        if (_modProp == null)
+        {
+            Debug.LogError(
+                $"Could not find the modules property on {_obj.name}.");
+
+            return;
+        }
+
+        if (HasModule(moduleType))
+            return;
+
+        int index = _modProp.arraySize;
+        _modProp.InsertArrayElementAtIndex(index);
+
+        SerializedProperty newModule =
+            _modProp.GetArrayElementAtIndex(index);
+
+        newModule.managedReferenceValue =
+            Activator.CreateInstance(moduleType);
+
+        _serializedObj.ApplyModifiedProperties();
+
+        EditorUtility.SetDirty(_obj);
+        AssetDatabase.SaveAssets();
+
+        RefreshDisplayers();
+    }
+    private bool HasModule(Type moduleType)
+    {
+        return _obj.modules.Any(m => m.GetType() == moduleType);
+    }
+    private void RefreshDisplayers()
+    {
+        displayers.Clear();
+
+        // Core module
+        displayers.Add(new TagDisplayer(_obj.tags));
+
+        // Optional modules
+        foreach (EntityModule module in currentModules)
+        {
+            Debug.Log($"Module Name: {module.GetType().FullName}");
+            displayers.Add(DisplayerCore.GetDisplayer(module));
+        }
+
+        foreach (var d in displayers)
+        {
+            Debug.Log($"Displayer Name: {d.GetType().FullName}");
+        }
+
+        rootVisualElement.Clear();
+        CreateGUI();
+    }
+    private void RemoveModule(EntityModule module)
+    {
+        if (!EditorUtility.DisplayDialog(
+            "Remove Module",
+            $"Are you sure you want to remove the {GetModuleDisplayName(module.GetType())} module?\n\n{module.RemoveWarning}",
+            "Remove",
+            "Cancel"))
+        {
+            return;
+        }
+
+        _serializedObj.Update();
+
+        for (int i = 0; i < _modProp.arraySize; i++)
+        {
+            SerializedProperty element = _modProp.GetArrayElementAtIndex(i);
+
+            if (ReferenceEquals(element.managedReferenceValue, module))
+            {
+                _modProp.DeleteArrayElementAtIndex(i);
+                break;
+            }
+        }
+        currentModules.Remove(module);
+
+        _serializedObj.ApplyModifiedProperties();
+
+        EditorUtility.SetDirty(_obj);
+        AssetDatabase.SaveAssets();
+
+        RefreshDisplayers();
+    }
+
     private void SaveInfo()
     {
         var formatID = _label.value;
@@ -619,6 +711,7 @@ public class ItemView : EditorWindow
                 data.itemType = (ItemType)_itemType.value;
                 data.maxStack = maxStack.value;
                 data.isReuseable = isReuse.value;
+                data.modules = currentModules;
                 
                 AssetDatabase.CreateAsset(data, "Assets/Data/Items/" + _label.value + ".asset");
                 AssetDatabase.SaveAssets();
@@ -638,6 +731,7 @@ public class ItemView : EditorWindow
                     data.effects = currentEffects;
                     data.itemType = (ItemType)_itemType.value;
                     data.equipType = (EquipType)_equipType.value;
+                    data.modules = currentModules;
 
                     AssetDatabase.CreateAsset(data, "Assets/Data/Items/" + _label.value + ".asset");
                     AssetDatabase.SaveAssets();
@@ -656,7 +750,8 @@ public class ItemView : EditorWindow
                     data.itemType = (ItemType)_itemType.value;
                     data.equipType = (EquipType)_equipType.value;
                     data.weaponType = (WeaponType)_weaponType.value;
-                    
+                    data.modules = currentModules;
+
                     AssetDatabase.CreateAsset(data, "Assets/Data/Items/" + _label.value + ".asset");
                     AssetDatabase.SaveAssets();
                     AssetDatabase.Refresh();

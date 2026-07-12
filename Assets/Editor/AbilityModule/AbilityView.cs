@@ -12,12 +12,14 @@ using UnityEngine.UIElements;
 
 public class AbilityView : EditorWindow
 {
-    private List<CustomTag> allTags;
     private List<Type> allEffectTypes;
     private VisualElement abilityRight;
     private ScrollView effectList;
-    private ScrollView tagLeft;
     private Image preview;
+
+    private List<DisplayerCore> displayers = new();
+    private List<EntityModule> currentModules = new();
+    private SerializedProperty _modProp;
 
     private TextField _label;
     private TextField _desc;
@@ -32,7 +34,6 @@ public class AbilityView : EditorWindow
     private SerializedProperty _iconProp;
     private SerializedProperty _effectsProp;
     private SerializedProperty _tagProp;
-    private SerializedProperty _manualProp;
 
     private EffectHost draftHost;
     private SerializedObject draftSerializedObject;
@@ -63,6 +64,8 @@ public class AbilityView : EditorWindow
     }
     private void SetAbility(AbilityData ability)
     {
+        displayers.Clear();
+        displayers.Add(new TagDisplayer(new TagModule()));
         _obj = ability;
 
         if (_obj != null)
@@ -70,22 +73,31 @@ public class AbilityView : EditorWindow
             currentTags = new();
             currentTags.Add("auto", new());
             currentTags.Add("manual", new());
-            foreach(var auto in _obj.tagList)
+            foreach(var auto in _obj.tags.auto)
             {
                 currentTags["auto"].Add(auto);
             }
-            foreach(var manual in _obj.manualTags)
+            foreach(var manual in _obj.tags.manual)
             {
                 currentTags["manual"].Add(manual);
             }
             currentEffects = _obj.effects ?? new List<Effect>();
+
+            displayers.Clear();
+            displayers.Add(new TagDisplayer(_obj.tags));
+            foreach (EntityModule e in _obj.modules)
+            {
+                displayers.Add(DisplayerCore.GetDisplayer(e));
+            }
+            currentModules = _obj.modules ?? new List<EntityModule>();
+
             _serializedObj = new SerializedObject(_obj);
             _labelProp = _serializedObj.FindProperty("label");
             _descProp = _serializedObj.FindProperty("desc");
             _iconProp = _serializedObj.FindProperty("icon");
             _effectsProp = _serializedObj.FindProperty("effects");
-            _tagProp = _serializedObj.FindProperty("tagList");
-            _manualProp = _serializedObj.FindProperty("manualTags");
+            _tagProp = _serializedObj.FindProperty("tags");
+            _modProp = _serializedObj.FindProperty("modules");
         }
         else
         {
@@ -99,7 +111,7 @@ public class AbilityView : EditorWindow
             _iconProp = null;
             _effectsProp = null;
             _tagProp = null;
-            _manualProp = null;
+            _modProp = null;
         }
 
         rootVisualElement.Clear();
@@ -127,21 +139,7 @@ public class AbilityView : EditorWindow
         AbilityView wnd = GetWindow<AbilityView>();
         wnd.titleContent = new GUIContent("AbilityView");
     }
-    private void GatherTags()
-    {
-        string[] guidsT = AssetDatabase.FindAssets("t:CustomTag", new[] { "Assets/Data/Tags" });
-        allTags = new List<CustomTag>();
-        foreach (string guid in guidsT)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            CustomTag tag = AssetDatabase.LoadAssetAtPath<CustomTag>(path);
 
-            if (tag != null)
-            {
-                allTags.Add(tag);
-            }
-        }
-    }
     public void CreateGUI()
     {
         if(!(currentTags.Keys.Count > 0))
@@ -150,7 +148,6 @@ public class AbilityView : EditorWindow
             currentTags.Add("manual", new());
         }
         rootVisualElement.Clear();
-        GatherTags();
 
         allEffectTypes = TypeCache.GetTypesDerivedFrom<Effect>()
             .Where(t => !t.IsAbstract && !t.IsGenericType && t.GetConstructor(Type.EmptyTypes) != null)
@@ -231,40 +228,24 @@ public class AbilityView : EditorWindow
             effectList.Add(CreateEffectItem(currentEffects[i], i));
         }
 
-        //Tags
-        var splitViewT = new TwoPaneSplitView(0, 315, TwoPaneSplitViewOrientation.Horizontal);
-        splitViewT.style.flexGrow = 1;
-        infoView.Add(splitViewT);
-
-        tagLeft = new ScrollView();
-        if (currentTags.Keys.Count > 0)
+        // Modules
+        foreach(var d in displayers)
         {
-            for (var i = 0; i < currentTags["auto"].Count; i++)
+            VisualElement moduleView = d.CraftView();
+
+            if (d.Module != null &&
+                d.Module is not TagModule)
             {
-                var tag = currentTags["auto"][i];
-                tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), null, false));
+                var removeButton = new Button(
+                    () => RemoveModule(d.Module))
+                {
+                    text = $"Remove {GetModuleDisplayName(d.Module.GetType())} Module"
+                };
+
+                moduleView.Add(removeButton);
             }
-            for (int i = 0; i < currentTags["manual"].Count; i++)
-            {
-                var tag = currentTags["manual"][i];
-                int index = i;
-                tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), () => RemoveTagAt(index), true));
-            }
-        }
-        splitViewT.Add(tagLeft);
 
-
-        var tagRight = new VisualElement();
-        tagRight.style.flexDirection = FlexDirection.Row;
-        tagRight.style.flexWrap = Wrap.Wrap;
-        tagRight.style.paddingLeft = 4;
-        tagRight.style.paddingBottom = 4;
-        tagRight.style.paddingTop = 4;
-        splitViewT.Add(tagRight);
-
-        foreach(var tag in allTags)
-        {
-            tagRight.Add(tag.GetVisuals(() => AddTag(tag), null, false));
+            infoView.Add(moduleView);
         }
 
         //Possible Effects
@@ -292,6 +273,8 @@ public class AbilityView : EditorWindow
 
         abilityRight.Add(new Label("Select an effect to view/edit"));
 
+        infoView.Add(CreateAddModuleButton());
+
         //Buttons
         var splitViewB = new TwoPaneSplitView(0, 315, TwoPaneSplitViewOrientation.Horizontal);
         splitViewB.style.maxHeight = 36;
@@ -309,7 +292,6 @@ public class AbilityView : EditorWindow
 
         //Keep Data Accurate
         RefreshCurrentEffects();
-        RefreshCurrentTags();
     }
 
     private VisualElement CreateEffectTile(Type effectType)
@@ -340,42 +322,13 @@ public class AbilityView : EditorWindow
 
         return button;
     }
-    private void AddTag(CustomTag data)
-    {
-        if (_obj == null || _serializedObj == null) return;
-
-        _serializedObj.Update();
-
-        var tagProp = _serializedObj.FindProperty("manualTags");
-
-        for(int i = 0; i < tagProp.arraySize; i++)
-        {
-            var element = tagProp.GetArrayElementAtIndex(i);
-            if(element.objectReferenceValue == data)
-            {
-                return;
-            }
-        }
-
-        int index = tagProp.arraySize;
-        tagProp.InsertArrayElementAtIndex(index);
-
-        var newElement = tagProp.GetArrayElementAtIndex(index);
-        newElement.objectReferenceValue = data;
-
-        _serializedObj.ApplyModifiedProperties();
-        EditorUtility.SetDirty(_obj);
-        AssetDatabase.SaveAssets();
-
-        RefreshCurrentTags();
-    }
     private void AddAutoTag(CustomTag data)
     {
         if (_obj == null || _serializedObj == null) return;
 
         _serializedObj.Update();
 
-        var tagProp = _serializedObj.FindProperty("tagList");
+        var tagProp = _serializedObj.FindProperty("auto");
 
         for (int i = 0; i < tagProp.arraySize; i++)
         {
@@ -396,53 +349,7 @@ public class AbilityView : EditorWindow
         EditorUtility.SetDirty(_obj);
         AssetDatabase.SaveAssets();
 
-        RefreshCurrentTags();
-    }
-    private void RefreshCurrentTags()
-    {
-        tagLeft.Clear();
-        foreach(var kvp in currentTags)
-        {
-            Debug.Log($"Key: {kvp.Key}");
-        }
-        currentTags["auto"].Clear();
-        currentTags["manual"].Clear();
-
-        if (_obj != null)
-        {
-            foreach (var autoT in _obj.tagList)
-            {
-                currentTags["auto"].Add(autoT);
-            }
-            foreach (var manual in _obj.manualTags)
-            {
-                currentTags["manual"].Add(manual);
-            }
-        }
-
-        if (currentTags.Keys.Count > 0)
-        {
-            for (var i = 0; i < currentTags["auto"].Count; i++)
-            {
-                var tag = currentTags["auto"][i];
-                tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), null, false));
-            }
-            for (int i = 0; i < currentTags["manual"].Count; i++)
-            {
-                var tag = currentTags["manual"][i];
-                var index = i;
-                tagLeft.Add(tag.GetVisuals(() => TagView.Open(tag), () => RemoveTagAt(index), true));
-            }
-        }
-    }
-    private void RemoveTagAt(int index)
-    {
-        Debug.Log($"Index value: {index}");
-        _serializedObj.Update();
-        _obj.manualTags.RemoveAt(index);
-        _serializedObj.ApplyModifiedProperties();
-
-        RefreshCurrentTags();
+        //RefreshCurrentTags();
     }
     private VisualElement CreateEffectItem(Effect effect, int index)
     {
@@ -592,6 +499,158 @@ public class AbilityView : EditorWindow
     {
         preview.image = sprite != null ? sprite.texture : null;
     }
+
+    //Module Functions
+    private List<Type> GetAvailableModuleTypes()
+    {
+        return TypeCache.GetTypesDerivedFrom<EntityModule>()
+        .Where(type =>
+            !type.IsAbstract &&
+            !type.IsGenericType &&
+            type != typeof(TagModule) &&
+            type.GetConstructor(Type.EmptyTypes) != null)
+        .OrderBy(type => type.Name)
+        .ToList();
+    }
+    private string GetModuleDisplayName(Type moduleType)
+    {
+        string name = moduleType.Name;
+
+        if (name.EndsWith("Module"))
+            name = name[..^"Module".Length];
+
+        return ObjectNames.NicifyVariableName(name);
+    }
+    private VisualElement CreateAddModuleButton()
+    {
+        var button = new Button
+        {
+            text = "Add Module"
+        };
+
+        button.clicked += () =>
+        {
+            GenericMenu menu = new GenericMenu();
+
+            foreach (Type moduleType in GetAvailableModuleTypes())
+            {
+
+                Type capturedType = moduleType;
+                bool alreadyAdded = HasModule(capturedType);
+
+                if (alreadyAdded)
+                {
+                    menu.AddDisabledItem(
+                        new GUIContent(GetModuleDisplayName(capturedType)));
+                }
+                else
+                {
+                    menu.AddItem(
+                        new GUIContent(GetModuleDisplayName(capturedType)),
+                        false,
+                        () => AddModule(capturedType));
+                }
+            }
+
+            menu.ShowAsContext();
+        };
+        button.SetEnabled(_obj != null);
+
+        return button;
+    }
+    private void AddModule(Type moduleType)
+    {
+        if (_obj == null || _serializedObj == null)
+            return;
+
+        _serializedObj.Update();
+
+        if (_modProp == null)
+        {
+            Debug.LogError(
+                $"Could not find the modules property on {_obj.name}.");
+
+            return;
+        }
+
+        if (HasModule(moduleType))
+            return;
+
+        int index = _modProp.arraySize;
+        _modProp.InsertArrayElementAtIndex(index);
+
+        SerializedProperty newModule =
+            _modProp.GetArrayElementAtIndex(index);
+
+        newModule.managedReferenceValue =
+            Activator.CreateInstance(moduleType);
+
+        _serializedObj.ApplyModifiedProperties();
+
+        EditorUtility.SetDirty(_obj);
+        AssetDatabase.SaveAssets();
+
+        RefreshDisplayers();
+    }
+    private bool HasModule(Type moduleType)
+    {
+        return _obj.modules.Any(m => m.GetType() == moduleType);
+    }
+    private void RefreshDisplayers()
+    {
+        displayers.Clear();
+
+        // Core module
+        displayers.Add(new TagDisplayer(_obj.tags));
+
+        // Optional modules
+        foreach (EntityModule module in currentModules)
+        {
+            Debug.Log($"Module Name: {module.GetType().FullName}");
+            displayers.Add(DisplayerCore.GetDisplayer(module));
+        }
+
+        foreach (var d in displayers)
+        {
+            Debug.Log($"Displayer Name: {d.GetType().FullName}");
+        }
+
+        rootVisualElement.Clear();
+        CreateGUI();
+    }
+    private void RemoveModule(EntityModule module)
+    {
+        if (!EditorUtility.DisplayDialog(
+            "Remove Module",
+            $"Are you sure you want to remove the {GetModuleDisplayName(module.GetType())} module?\n\n{module.RemoveWarning}",
+            "Remove",
+            "Cancel"))
+        {
+            return;
+        }
+
+        _serializedObj.Update();
+
+        for (int i = 0; i < _modProp.arraySize; i++)
+        {
+            SerializedProperty element = _modProp.GetArrayElementAtIndex(i);
+
+            if (ReferenceEquals(element.managedReferenceValue, module))
+            {
+                _modProp.DeleteArrayElementAtIndex(i);
+                break;
+            }
+        }
+        currentModules.Remove(module);
+
+        _serializedObj.ApplyModifiedProperties();
+
+        EditorUtility.SetDirty(_obj);
+        AssetDatabase.SaveAssets();
+
+        RefreshDisplayers();
+    }
+
     private void SaveInfo()
     {
         var formatID = _label.value;
@@ -606,6 +665,7 @@ public class AbilityView : EditorWindow
             ability.desc = _desc.value;
             ability.icon = _icon.value as Sprite;
             ability.effects = currentEffects;
+            ability.modules = currentModules;
 
             AssetDatabase.CreateAsset(ability, "Assets/Data/Abilities/" + _label.value + ".asset");
             AssetDatabase.SaveAssets();

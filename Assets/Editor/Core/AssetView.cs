@@ -534,11 +534,11 @@ public class AssetView : EditorWindow
 
         if (data is not EntityData entity) return false;
 
-        if (entity.tagList == null) return false;
+        if (entity.tags == null) return false;
 
         foreach (var tag in activeFilters[tabName])
         {
-            if (!entity.tagList.Contains(tag)) return false;
+            if (!(entity.tags.auto.Contains(tag) || entity.tags.manual.Contains(tag))) return false;
         }
 
         return true;

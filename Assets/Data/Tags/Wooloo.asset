@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9010bce5011bea5479fe5a2cc745b600, type: 3}
+  m_Name: Wooloo
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::CustomTag
+  id: tag_wooloo
+  label: Wooloo
+  icon: {fileID: 7226253214429048941, guid: ec15a68a0586a634bbbefdcc2ab6cf9a, type: 3}
+  manualTags: []
+  tagList: []
+  tags:
+    auto: []
+    manual: []
+  category: 0
