@@ -46,11 +46,11 @@ Base item class extended by:
 
 ### ActorData
 
-Stores actor-specific information, including abilities and loot.
+Stores actor-specific information.
 
-### SkillData
+### AbilityData
 
-Stores skill definitions used by actors.
+Stores ability-specific information.
 
 ### CustomTag
 
