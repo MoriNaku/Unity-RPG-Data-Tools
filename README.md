@@ -20,6 +20,7 @@ This tool was extracted from an active Unity project, so some modules may refere
 * Dynamic tag system for flexible organization
 * Centralized workflow for managing game data
 * Inheritance-based data architecture for reusable systems
+* Blank samples for user-driven module creation and customization
 
 ---
 
@@ -46,11 +47,11 @@ Base item class extended by:
 
 ### ActorData
 
-Stores actor-specific information, including abilities and loot.
+Stores actor-specific information.
 
-### SkillData
+### AbilityData
 
-Stores skill definitions used by actors.
+Stores ability-specific information.
 
 ### CustomTag
 
@@ -127,7 +128,7 @@ Planned improvements include:
 This project serves as both a production tool for future game development and a portfolio project demonstrating Unity Editor tooling, reusable architecture, and scalable game data management.
 
 ## Update Log
-7-8-2026
+### 7-8-2026
 * Refactored the Core Module to use a CoreDataRegistry asset for configuration instead of hard-coded ScriptableObject types.
 * Added support for dynamically generating tabs and discovering assets based on the modules registered in the CoreDataRegistry.
 * Introduced configurable module metadata, including:
@@ -139,3 +140,19 @@ This project serves as both a production tool for future game development and a 
   * UseCustomView setting
 * Implemented reflection-based support for launching custom editor windows without introducing direct dependencies between the Core Module and individual editor modules.
 * Generic ScriptableObject types can now be displayed and browsed through the Core window, while modules with custom views retain their existing create and edit workflows.
+
+### 7-12-2026
+* Refactored the editor framework to support a modular data architecture.
+* Moved the tag system into a dedicated `TagModule`, removing tag storage from the core `EntityData` implementation.
+* Added support for optional `EntityModule`s through a dynamic module system using `SerializeReference`.
+* Created a `DisplayerCore` architecture, allowing each module to provide its own custom editor UI.
+* Implemented automatic discovery of available modules for editor windows.
+* Added an **Add Module** workflow, allowing optional modules to be attached directly from custom editor windows.
+* Added a **Remove Module** workflow with confirmation prompts to safely detach optional modules.
+* Updated all existing editor windows to use the new module system.
+* Converted the existing Ability functionality into an `AbilityModule` as the first optional module implementation.
+* Verified module persistence across save/load cycles for both existing and newly created assets.
+
+### 7-15-2026
+* Restructured Core folder to be more organized
+* Added an Example folder for empty data sets for user customization
