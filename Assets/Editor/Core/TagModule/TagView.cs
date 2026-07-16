@@ -59,13 +59,13 @@ public class TagView : EditorWindow
         CreateGUI();
     }
 
-    [MenuItem("Assets/Open in TagView", true)]
+    [MenuItem("Assets/Crying Forest/Open in TagView", true)]
     private static bool ValidateOpen()
     {
         return Selection.activeObject is CustomTag;
     }
 
-    [MenuItem("Assets/Open in TagView")]
+    [MenuItem("Assets/Crying Forest/Open in TagView")]
     private static void OpenSelected()
     {
         if (Selection.activeObject is CustomTag data)
@@ -73,7 +73,7 @@ public class TagView : EditorWindow
             Open(data);
         }
     }
-    [MenuItem("Window/UI Toolkit/TagView")]
+    [MenuItem("Window/Crying Forest Toolkit/TagView")]
     public static void ShowExample()
     {
         TagView wnd = GetWindow<TagView>();

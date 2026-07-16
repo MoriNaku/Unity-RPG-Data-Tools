@@ -138,13 +138,13 @@ public class ItemView : EditorWindow
         CreateGUI();
     }
 
-    [MenuItem("Assets/Open in ItemView", true)]
+    [MenuItem("Assets/Crying Forest/Open in ItemView", true)]
     private static bool ValidateOpen()
     {
         return Selection.activeObject is ItemData;
     }
 
-    [MenuItem("Assets/Open in ItemView")]
+    [MenuItem("Assets/Crying Forest/Open in ItemView")]
     private static void OpenSelected()
     {
         if (Selection.activeObject is ItemData data)
@@ -152,7 +152,7 @@ public class ItemView : EditorWindow
             Open(data);
         }
     }
-    [MenuItem("Window/UI Toolkit/ItemView")]
+    [MenuItem("Window/Crying Forest Toolkit/ItemView")]
     public static void ShowExample()
     {
         ItemView wnd = GetWindow<ItemView>();
@@ -302,9 +302,23 @@ public class ItemView : EditorWindow
         descRight.Add(_icon);
 
         //Displayers
-        foreach(var d in displayers)
+        foreach (var d in displayers)
         {
-            infoView.Add(d.CraftView());
+            VisualElement moduleView = d.CraftView();
+
+            if (d.Module != null &&
+                d.Module is not TagModule)
+            {
+                var removeButton = new Button(
+                    () => RemoveModule(d.Module))
+                {
+                    text = $"Remove {GetModuleDisplayName(d.Module.GetType())} Module"
+                };
+
+                moduleView.Add(removeButton);
+            }
+
+            infoView.Add(moduleView);
         }
 
         //Current Effect List
@@ -626,18 +640,13 @@ public class ItemView : EditorWindow
         displayers.Clear();
 
         // Core module
-        displayers.Add(new TagDisplayer(_obj.tags));
+        if (_obj != null)
+            displayers.Add(new TagDisplayer(_obj.tags));
 
         // Optional modules
         foreach (EntityModule module in currentModules)
         {
-            Debug.Log($"Module Name: {module.GetType().FullName}");
             displayers.Add(DisplayerCore.GetDisplayer(module));
-        }
-
-        foreach (var d in displayers)
-        {
-            Debug.Log($"Displayer Name: {d.GetType().FullName}");
         }
 
         rootVisualElement.Clear();

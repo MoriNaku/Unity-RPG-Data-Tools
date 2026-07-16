@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2864206ff69ba85419002bea0e33f7ce, type: 3}
+  m_Name: Goblin
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::ActorData
+  id: actor_goblin
+  label: Goblin
+  icon: {fileID: 0}
+  tags:
+    auto: []
+    manual: []
+  modules:
+  - rid: 1817690919860961358
+  desc: Actor Description
+  abilities: []
+  lootTable: {fileID: 11400000, guid: fd8c40359c9905d40b6712cd777e8d7f, type: 2}
+  references:
+    version: 2
+    RefIds:
+    - rid: 1817690919860961358
+      type: {class: AbilityModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        abilities:
+        - {fileID: 11400000, guid: f1bd6ed62ed796945a658a268479a7bf, type: 2}

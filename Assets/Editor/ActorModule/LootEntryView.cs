@@ -23,13 +23,13 @@ public class LootEntryView : EditorWindow
     private FloatField _chance;
     private ScrollView _lootList;
 
-    [MenuItem("Assets/Open in LootEntryView", true)]
+    [MenuItem("Assets/Crying Forest/Open in LootEntryView", true)]
     private static bool ValidateOpen()
     {
         return Selection.activeObject is LootTableData;
     }
 
-    [MenuItem("Assets/Open in LootEntryView")]
+    [MenuItem("Assets/Crying Forest/Open in LootEntryView")]
     private static void OpenSelected()
     {
         if (Selection.activeObject is LootTableData data)
@@ -37,7 +37,7 @@ public class LootEntryView : EditorWindow
             Open(data);
         }
     }
-    [MenuItem("Window/UI Toolkit/LootEntryView")]
+    [MenuItem("Window/Crying Forest Toolkit/LootEntryView")]
     public static void ShowExample()
     {
         LootEntryView wnd = GetWindow<LootEntryView>();

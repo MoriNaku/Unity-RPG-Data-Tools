@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using UnityEngine.UIElements;
 using UnityEditor;
 
-[CreateAssetMenu(fileName = "ActorData", menuName = "Custom/Actor")]
+[CreateAssetMenu(fileName = "ActorData", menuName = "CryingForest/Actor")]
 public class ActorData : EntityData
 {
     public string desc;
-    //public List<EntityModule> modules;
     public List<AbilityData> abilities;
     public LootTableData lootTable;
 
@@ -21,6 +20,5 @@ public class ActorData : EntityData
     {
         if (string.IsNullOrEmpty(label)) label = name;
         if (abilities == null) abilities = new List<AbilityData>();
-        //if (modules == null) modules = new List<EntityModule>();
     }
 }

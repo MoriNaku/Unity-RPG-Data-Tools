@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-[CreateAssetMenu(fileName = "AbilityData", menuName = "Custom/Ability")]
+[CreateAssetMenu(fileName = "AbilityData", menuName = "CryingForest/Ability")]
 public class AbilityData : EntityData
 {
     public string desc;

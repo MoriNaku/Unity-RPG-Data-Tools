@@ -118,13 +118,13 @@ public class AbilityView : EditorWindow
         CreateGUI();
     }
 
-    [MenuItem("Assets/Open in AbilityView", true)]
+    [MenuItem("Assets/Crying Forest/Open in AbilityView", true)]
     private static bool ValidateOpenAbility()
     {
         return Selection.activeObject is AbilityData;
     }
 
-    [MenuItem("Assets/Open in AbilityView")]
+    [MenuItem("Assets/Crying Forest/Open in AbilityView")]
     private static void OpenSelectedAbility()
     {
         if (Selection.activeObject is AbilityData ability)
@@ -133,7 +133,7 @@ public class AbilityView : EditorWindow
         }
     }
 
-    [MenuItem("Window/UI Toolkit/AbilityView")]
+    [MenuItem("Window/Crying Forest Toolkit/AbilityView")]
     public static void ShowExample()
     {
         AbilityView wnd = GetWindow<AbilityView>();
@@ -601,18 +601,13 @@ public class AbilityView : EditorWindow
         displayers.Clear();
 
         // Core module
-        displayers.Add(new TagDisplayer(_obj.tags));
+        if (_obj != null)
+            displayers.Add(new TagDisplayer(_obj.tags));
 
         // Optional modules
         foreach (EntityModule module in currentModules)
         {
-            Debug.Log($"Module Name: {module.GetType().FullName}");
             displayers.Add(DisplayerCore.GetDisplayer(module));
-        }
-
-        foreach (var d in displayers)
-        {
-            Debug.Log($"Displayer Name: {d.GetType().FullName}");
         }
 
         rootVisualElement.Clear();
