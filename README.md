@@ -20,6 +20,7 @@ This tool was extracted from an active Unity project, so some modules may refere
 * Dynamic tag system for flexible organization
 * Centralized workflow for managing game data
 * Inheritance-based data architecture for reusable systems
+* Blank samples for user-driven module creation and customization
 
 ---
 
@@ -151,3 +152,7 @@ This project serves as both a production tool for future game development and a 
 * Updated all existing editor windows to use the new module system.
 * Converted the existing Ability functionality into an `AbilityModule` as the first optional module implementation.
 * Verified module persistence across save/load cycles for both existing and newly created assets.
+
+### 7-15-2026
+* Restructured Core folder to be more organized
+* Added an Example folder for empty data sets for user customization
