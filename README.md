@@ -76,6 +76,15 @@ This workflow is intended to reduce time spent navigating folders and repeatedly
 
 ---
 
+## How to Create Your Own Module
+
+* Copy the files in Core/Examples.
+* Rename the classes and files.
+* Implement your own fields and UI.
+* For more advanced patterns, refer to the built-in modules included with the framework.
+
+---
+
 ## Design Goals
 
 This project emphasizes a data-driven approach.
