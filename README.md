@@ -4,11 +4,11 @@
 
 Unity RPG Data Tools is a collection of custom Unity Editor tools designed to simplify the creation and management of RPG data using ScriptableObjects.
 
-The project focuses on improving content creation workflows by providing searchable asset browsers, dedicated editing windows, and a flexible data-driven architecture. Rather than relying solely on Unity's default Inspector, these tools allow designers and developers to quickly create, locate, edit, and organize game data from a centralized interface.
+The project focuses on improving content creation workflows by providing searchable asset browsers, dedicated editing windows, a modular data architecture, and flexible editor extensions. Rather than relying solely on Unity's default Inspector, these tools allow designers and developers to quickly create, locate, edit, and organize game data from a centralized interface.
 
 This project was built both as a productivity tool for future game development and as a demonstration of Unity Editor scripting, C#, object-oriented design, and scalable data architecture.
 
-This tool was extracted from an active Unity project, so some modules may reference project-specific data types. The intended structure is modular: use the Core folder plus whichever module folders are relevant, then remove or replace project-specific references as needed.
+This tool was extracted from an active Unity project, so some modules may reference project-specific data types. The intended structure is modular: use the Core folder plus whichever module folders are relevant, then remove or replace project-specific references as needed. The framework is designed so new functionality can be added through optional modules rather than modifying the core architecture.
 
 ---
 
@@ -20,11 +20,11 @@ This tool was extracted from an active Unity project, so some modules may refere
 * Dynamic tag system for flexible organization
 * Centralized workflow for managing game data
 * Inheritance-based data architecture for reusable systems
-* Blank samples for user-driven module creation and customization
+* Example templates for extending the framework with custom modules
 
 ---
 
-## Current Asset Types
+## Current Data Types
 
 ### EntityData
 
@@ -56,6 +56,13 @@ Stores ability-specific information.
 ### CustomTag
 
 Provides a flexible tagging system used for organization and future gameplay systems.
+
+### Included Modules
+* AbilityModule
+* ActorModule
+* ItemModule
+* EffectModule
+* TagModule
 
 ---
 
@@ -164,4 +171,4 @@ This project serves as both a production tool for future game development and a 
 
 ### 7-15-2026
 * Restructured Core folder to be more organized
-* Added an Example folder for empty data sets for user customization
+* Added a Core/Examples folder containing template Data, Module, and View classes for creating custom extensions.
