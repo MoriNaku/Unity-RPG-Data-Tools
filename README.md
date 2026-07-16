@@ -172,3 +172,4 @@ This project serves as both a production tool for future game development and a 
 ### 7-15-2026
 * Restructured Core folder to be more organized
 * Added a Core/Examples folder containing template Data, Module, and View classes for creating custom extensions.
+* Organized Unity Editor integration with dedicated Crying Forest Toolkit menus.
