@@ -14,6 +14,14 @@ public class ActorDisplayer : DisplayerCore
     {
         var viewPort = new VisualElement();
 
-        return viewPort;
+        var foldout = new Foldout
+        {
+            text = "Actors",
+            value = false
+        };
+
+        foldout.Add(viewPort);
+
+        return foldout;
     }
 }

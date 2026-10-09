@@ -77,13 +77,18 @@ public class ActorView : EditorWindow
                 currentTags["manual"].Add(manual);
             }
 
-            displayers.Clear();
-            displayers.Add(new TagDisplayer(_obj.tags));
-            foreach (EntityModule e in _obj.modules)
-            {
-                displayers.Add(DisplayerCore.GetDisplayer(e));
-            }
             currentModules = _obj.modules ?? new List<EntityModule>();
+
+            displayers.Clear();
+            // Core module
+            if (_obj != null)
+                displayers.Add(new TagDisplayer(_obj.tags));
+
+            // Optional modules
+            foreach (EntityModule module in currentModules)
+            {
+                displayers.Add(DisplayerCore.GetDisplayer(module));
+            }
 
             loot = _obj.lootTable ?? ScriptableObject.CreateInstance<LootTableData>();
             _serializedObj = new SerializedObject(_obj);
@@ -277,6 +282,7 @@ public class ActorView : EditorWindow
             !type.IsGenericType &&
             type != typeof(TagModule) &&
             type.GetConstructor(Type.EmptyTypes) != null)
+        .Union(new[] { typeof(MechanicModule) })
         .OrderBy(type => type.Name)
         .ToList();
     }
@@ -310,6 +316,10 @@ public class ActorView : EditorWindow
                 {
                     menu.AddDisabledItem(
                         new GUIContent(GetModuleDisplayName(capturedType)));
+                }
+                else if (GetModuleDisplayName(capturedType) == "Example")
+                {
+                    continue;
                 }
                 else
                 {

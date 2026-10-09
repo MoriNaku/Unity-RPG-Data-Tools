@@ -27,10 +27,24 @@ MonoBehaviour:
     viewType: {fileID: 11500000, guid: 04b5cc051083a0246aba0de82af5e8d2, type: 3}
     usesCustomView: 1
     usesTagFiltering: 1
+  - tabName: Ancestries
+    displayName: Ancestry
+    dataPath: Assets/Data/Ancestries
+    moduleType: {fileID: 11500000, guid: 623a6ccff497c5147a1ac661f3b1e0de, type: 3}
+    viewType: {fileID: 11500000, guid: 10904c2b05c991342ae15a28cea1ec10, type: 3}
+    usesCustomView: 1
+    usesTagFiltering: 1
   - tabName: Items
     displayName: Item
     dataPath: Assets/Data/Items
     moduleType: {fileID: 11500000, guid: 8f78ac5c0ea8e9e49a71230454577afe, type: 3}
     viewType: {fileID: 11500000, guid: e07d27a77594cb2488f986e7d09c7d71, type: 3}
+    usesCustomView: 1
+    usesTagFiltering: 1
+  - tabName: Loot Tables
+    displayName: Loot Table
+    dataPath: Assets/Data/LootTables
+    moduleType: {fileID: 11500000, guid: 160b766f7720b4740b3c9810fc4208d4, type: 3}
+    viewType: {fileID: 11500000, guid: be3ac3aa7015d864689b24dc315d1d7f, type: 3}
     usesCustomView: 1
     usesTagFiltering: 1

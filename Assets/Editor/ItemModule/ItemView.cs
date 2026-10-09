@@ -92,13 +92,18 @@ public class ItemView : EditorWindow
                 currentTags["manual"].Add(manual);
             }
 
-            displayers.Clear();
-            displayers.Add(new TagDisplayer(_obj.tags));
-            foreach (EntityModule e in _obj.modules)
-            {
-                displayers.Add(DisplayerCore.GetDisplayer(e));
-            }
             currentModules = _obj.modules ?? new List<EntityModule>();
+
+            displayers.Clear();
+            // Core module
+            if (_obj != null)
+                displayers.Add(new TagDisplayer(_obj.tags));
+
+            // Optional modules
+            foreach (EntityModule module in currentModules)
+            {
+                displayers.Add(DisplayerCore.GetDisplayer(module));
+            }
 
             currentEffects = _obj.effects ?? new List<Effect>();
             _serializedObj = new SerializedObject(_obj);
@@ -119,7 +124,8 @@ public class ItemView : EditorWindow
             currentTags = new();
             currentTags.Add("auto", new());
             currentTags.Add("manual", new());
-            currentEffects = new List<Effect>();
+            currentEffects = new();
+            currentModules = new();
             _serializedObj = null;
             _labelProp = null;
             _descProp = null;
@@ -548,6 +554,7 @@ public class ItemView : EditorWindow
             !type.IsGenericType &&
             type != typeof(TagModule) &&
             type.GetConstructor(Type.EmptyTypes) != null)
+        .Union(new[] { typeof(MechanicModule) })
         .OrderBy(type => type.Name)
         .ToList();
     }
@@ -581,6 +588,10 @@ public class ItemView : EditorWindow
                 {
                     menu.AddDisabledItem(
                         new GUIContent(GetModuleDisplayName(capturedType)));
+                }
+                else if (GetModuleDisplayName(capturedType) == "Example")
+                {
+                    continue;
                 }
                 else
                 {

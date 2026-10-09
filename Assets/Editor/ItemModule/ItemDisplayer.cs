@@ -13,6 +13,14 @@ public class ItemDisplayer : DisplayerCore
     {
         var viewPort = new VisualElement();
 
-        return viewPort;
+        var foldout = new Foldout
+        {
+            text = "Items",
+            value = false
+        };
+
+        foldout.Add(viewPort);
+
+        return foldout;
     }
 }

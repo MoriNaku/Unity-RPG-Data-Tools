@@ -13,6 +13,14 @@ public class EffectDisplayer : DisplayerCore
     {
         var viewPort = new VisualElement();
 
-        return viewPort;
+        var foldout = new Foldout
+        {
+            text = "Effects",
+            value = false
+        };
+
+        foldout.Add(viewPort);
+
+        return foldout;
     }
 }

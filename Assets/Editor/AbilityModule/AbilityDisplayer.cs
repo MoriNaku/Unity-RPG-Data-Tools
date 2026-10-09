@@ -61,7 +61,15 @@ public class AbilityDisplayer : DisplayerCore
 
         PopulateAbilities(abilityList);
 
-        return viewPort;
+        var foldout = new Foldout
+        {
+            text = "Abilities",
+            value = false
+        };
+
+        foldout.Add(viewPort);
+
+        return foldout;
     }
 
     private void GatherAbilities()

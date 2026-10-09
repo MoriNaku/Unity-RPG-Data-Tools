@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 623a6ccff497c5147a1ac661f3b1e0de, type: 3}
+  m_Name: Human
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::AncestryData
+  id: ancestry_human
+  label: Human
+  icon: {fileID: 0}
+  tags:
+    auto: []
+    manual: []
+  modules:
+  - rid: 6686703275531567177
+  - rid: 6686703275531567178
+  - rid: 6686703275531567179
+  - rid: 6686703275531567180
+  - rid: 6686703275531567182
+  - rid: 6686703275531567183
+  description: 
+  mechanics: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 6686703275531567177
+      type: {class: AbilityModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        abilities: []
+    - rid: 6686703275531567178
+      type: {class: ActorModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        actors: []
+    - rid: 6686703275531567179
+      type: {class: AncestryModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        ancestries: []
+    - rid: 6686703275531567180
+      type: {class: EffectModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        effects: []
+    - rid: 6686703275531567182
+      type: {class: ItemModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        items: []
+    - rid: 6686703275531567183
+      type: {class: MechanicModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        mechanics: []

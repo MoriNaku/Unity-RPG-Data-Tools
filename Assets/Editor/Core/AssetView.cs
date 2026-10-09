@@ -19,7 +19,8 @@ public class AssetView : EditorWindow
     private string[] myModules = {
         "AbilityData",
         "ActorData",
-        "ItemData"
+        "ItemData",
+        "AncestryData"
     };
 
     private List<(Button element, ScriptableObject data)> tTiles = new();
