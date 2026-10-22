@@ -678,7 +678,6 @@ public class AbilityView : EditorWindow
             );
 
             AssetDatabase.CreateAsset(data, path);
-            AssetDatabase.CreateAsset(data, "Assets/Data/Abilities/" + _label.value + ".asset");
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
