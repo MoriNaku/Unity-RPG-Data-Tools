@@ -665,19 +665,24 @@ public class AbilityView : EditorWindow
 
         if (_obj == null || _serializedObj == null)
         {
-            var ability = ScriptableObject.CreateInstance<AbilityData>();
-            ability.id = "ability_" + formatID;
-            ability.label = _label.value;
-            ability.desc = _desc.value;
-            ability.icon = _icon.value as Sprite;
-            ability.effects = currentEffects;
-            ability.modules = currentModules;
+            var data = ScriptableObject.CreateInstance<AbilityData>();
+            data.id = "ability_" + formatID;
+            data.label = _label.value;
+            data.desc = _desc.value;
+            data.icon = _icon.value as Sprite;
+            data.effects = currentEffects;
+            data.modules = currentModules;
 
-            AssetDatabase.CreateAsset(ability, "Assets/Data/Abilities/" + _label.value + ".asset");
+            string path = AssetDatabase.GenerateUniqueAssetPath(
+                "Assets/Data/Abilities/" + _label.value + ".asset"
+            );
+
+            AssetDatabase.CreateAsset(data, path);
+            AssetDatabase.CreateAsset(data, "Assets/Data/Abilities/" + _label.value + ".asset");
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            SetAbility(ability);
+            SetAbility(data);
         }
         else
         {

@@ -353,7 +353,11 @@ public class ExampleView : EditorWindow
             data.modules = currentModules;
 
             //Set where to save your assets to, make sure to update the path appropriately
-            AssetDatabase.CreateAsset(data, "Assets/Data/Examples/" + _label.value + ".asset");
+            string path = AssetDatabase.GenerateUniqueAssetPath(
+                "Assets/Data/Examples/" + _label.value + ".asset"
+            );
+
+            AssetDatabase.CreateAsset(data, path);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 

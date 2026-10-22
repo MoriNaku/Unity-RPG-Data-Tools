@@ -732,8 +732,12 @@ public class ItemView : EditorWindow
                 data.maxStack = maxStack.value;
                 data.isReuseable = isReuse.value;
                 data.modules = currentModules;
-                
-                AssetDatabase.CreateAsset(data, "Assets/Data/Items/" + _label.value + ".asset");
+
+                string path = AssetDatabase.GenerateUniqueAssetPath(
+                    "Assets/Data/Items/" + _label.value + ".asset"
+                );
+
+                AssetDatabase.CreateAsset(data, path);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
 
@@ -753,7 +757,11 @@ public class ItemView : EditorWindow
                     data.equipType = (EquipType)_equipType.value;
                     data.modules = currentModules;
 
-                    AssetDatabase.CreateAsset(data, "Assets/Data/Items/" + _label.value + ".asset");
+                    string path = AssetDatabase.GenerateUniqueAssetPath(
+                        "Assets/Data/Items/" + _label.value + ".asset"
+                    );
+
+                    AssetDatabase.CreateAsset(data, path);
                     AssetDatabase.SaveAssets();
                     AssetDatabase.Refresh();
 
@@ -772,7 +780,11 @@ public class ItemView : EditorWindow
                     data.weaponType = (WeaponType)_weaponType.value;
                     data.modules = currentModules;
 
-                    AssetDatabase.CreateAsset(data, "Assets/Data/Items/" + _label.value + ".asset");
+                    string path = AssetDatabase.GenerateUniqueAssetPath(
+                        "Assets/Data/Items/" + _label.value + ".asset"
+                    );
+
+                    AssetDatabase.CreateAsset(data, path);
                     AssetDatabase.SaveAssets();
                     AssetDatabase.Refresh();
 

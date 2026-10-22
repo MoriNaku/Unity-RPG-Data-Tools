@@ -445,7 +445,11 @@ public class ActorView : EditorWindow
             data.lootTable.id = $"lootTable_{formatID}";
             data.lootTable.label = $"Loot Table ({_label.value})";
 
-            AssetDatabase.CreateAsset(data, "Assets/Data/Actors/" + _label.value + ".asset");
+            string path = AssetDatabase.GenerateUniqueAssetPath(
+                "Assets/Data/Actors/" + _label.value + ".asset"
+            );
+
+            AssetDatabase.CreateAsset(data, path);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 

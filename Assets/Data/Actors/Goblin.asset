@@ -21,7 +21,7 @@ MonoBehaviour:
   modules: []
   desc: Actor Description
   abilities: []
-  lootTable: {fileID: 0}
+  lootTable: {fileID: 11400000, guid: ee803e959fe0e4540b67585c0bb5a19e, type: 2}
   references:
     version: 2
     RefIds: []

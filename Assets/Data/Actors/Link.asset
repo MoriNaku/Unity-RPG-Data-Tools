@@ -20,21 +20,14 @@ MonoBehaviour:
     manual:
     - {fileID: 11400000, guid: d094a421b9df9fc479054e934788337a, type: 2}
   modules:
-  - rid: 6686703559738916942
-  - rid: 6686703559738916943
-  desc: The Hero of Time
+  - rid: 6686703559738916946
+  desc: The Hero of Hyrule
   abilities: []
-  lootTable: {fileID: 11400000, guid: 18a624152cdb28e43ae172c52f414e79, type: 2}
+  lootTable: {fileID: 11400000, guid: b9faa713a6fe5114a8d06a9ab83b9563, type: 2}
   references:
     version: 2
     RefIds:
-    - rid: 6686703559738916942
-      type: {class: MechanicModule, ns: , asm: Assembly-CSharp-Editor}
-      data:
-        mechanics:
-        - {fileID: 0}
-        - {fileID: 0}
-    - rid: 6686703559738916943
+    - rid: 6686703559738916946
       type: {class: AncestryModule, ns: , asm: Assembly-CSharp-Editor}
       data:
         ancestries:

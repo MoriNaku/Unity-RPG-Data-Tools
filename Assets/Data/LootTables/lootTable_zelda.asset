@@ -10,17 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 160b766f7720b4740b3c9810fc4208d4, type: 3}
-  m_Name: lootTable_goblin 1
+  m_Name: lootTable_zelda
   m_EditorClassIdentifier: Assembly-CSharp-Editor::LootTableData
-  id: lootTable_goblin
-  label: Loot Table (Goblin)
+  id: lootTable_zelda
+  label: Loot Table (Zelda)
   icon: {fileID: 0}
   tags:
     auto: []
     manual: []
   modules: []
   tableName: 
-  table: []
+  table:
+  - item: {fileID: 11400000, guid: 449b9a7fe1121ff4cabea02e0b6795a4, type: 2}
+    amount: 1
+    chance: 0.1
   references:
     version: 2
     RefIds: []

@@ -20,7 +20,10 @@ MonoBehaviour:
     manual: []
   modules: []
   tableName: 
-  table: []
+  table:
+  - item: {fileID: 11400000, guid: 449b9a7fe1121ff4cabea02e0b6795a4, type: 2}
+    amount: 1
+    chance: 1
   references:
     version: 2
     RefIds: []

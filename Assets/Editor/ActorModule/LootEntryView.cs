@@ -254,10 +254,10 @@ public class LootEntryView : EditorWindow
                 label += _nameProp.stringValue;
             foreach( var guid in guids)
             {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (Path.GetFileNameWithoutExtension(path).Contains(label))
+                string pathTemp = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetFileNameWithoutExtension(pathTemp).Contains(label))
                 {
-                    fileNames.Add(Path.GetFileNameWithoutExtension(path));
+                    fileNames.Add(Path.GetFileNameWithoutExtension(pathTemp));
                 }
             }
             if(fileNames.Contains(label))
@@ -279,7 +279,11 @@ public class LootEntryView : EditorWindow
                 data.label = "";
             data.table = new();
 
-            AssetDatabase.CreateAsset(data, "Assets/Data/LootTables/" + label + ".asset");
+            string path = AssetDatabase.GenerateUniqueAssetPath(
+                "Assets/Data/LootTables/" + label + ".asset"
+            );
+
+            AssetDatabase.CreateAsset(data, path);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 

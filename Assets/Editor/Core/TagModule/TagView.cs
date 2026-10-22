@@ -170,7 +170,11 @@ public class TagView : EditorWindow
             data.icon = _icon.value as Sprite;
             data.category = (TagType)_tagType.value;
 
-            AssetDatabase.CreateAsset(data, "Assets/Data/Tags/" + _label.value + ".asset");
+            string path = AssetDatabase.GenerateUniqueAssetPath(
+                "Assets/Data/Tags/" + _label.value + ".asset"
+            );
+
+            AssetDatabase.CreateAsset(data, path);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
