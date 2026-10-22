@@ -1,5 +1,6 @@
 using PlasticGui.Help.Actions;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using TMPro.EditorUtilities;
 using Unity.VisualScripting.YamlDotNet.Core.Tokens;
@@ -16,6 +17,7 @@ public class LootEntryView : EditorWindow
 
     private LootTableData _obj;
     private SerializedObject _serializedObj;
+    private SerializedProperty _nameProp;
     private SerializedProperty _entriesProp;
 
     private PopupField<ItemData> _item;
@@ -63,11 +65,13 @@ public class LootEntryView : EditorWindow
         {
             currentLoot = _obj.table ?? new List<LootEntry>();
             _serializedObj = new SerializedObject(_obj);
+            _nameProp = _serializedObj.FindProperty("tableName");
             _entriesProp = _serializedObj.FindProperty("table");
         } else
         {
             currentLoot = new List<LootEntry>();
             _serializedObj = null;
+            _nameProp = null;
             _entriesProp = null;
         }
 
@@ -243,13 +247,39 @@ public class LootEntryView : EditorWindow
         if (_obj == null)
         {
             string[] guids = AssetDatabase.FindAssets("t:LootTableData");
-            var label = $"lootTable_{guids.Length}";
+            int filenameAdjustment = 0;
+            List<string> fileNames = new List<string>();
+            var label = $"lootTable_";
+            if (_nameProp != null)
+                label += _nameProp.stringValue;
+            foreach( var guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetFileNameWithoutExtension(path).Contains(label))
+                {
+                    fileNames.Add(Path.GetFileNameWithoutExtension(path));
+                }
+            }
+            if(fileNames.Contains(label))
+            {
+                filenameAdjustment = 1;
+
+                while (fileNames.Contains(label + "_" + filenameAdjustment))
+                {
+                    filenameAdjustment++;
+                }
+
+                label += "_" + filenameAdjustment;
+            }
             var data = ScriptableObject.CreateInstance<LootTableData>();
             data.id = label;
-            data.label = "";
+            if(_nameProp != null)
+                data.label = _nameProp.stringValue;
+            else
+                data.label = "";
             data.table = new();
 
-            AssetDatabase.CreateAsset(data, "Assets/Data/Loot Tables/" + label + ".asset");
+            AssetDatabase.CreateAsset(data, "Assets/Data/LootTables/" + label + ".asset");
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 

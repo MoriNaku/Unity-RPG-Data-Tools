@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2864206ff69ba85419002bea0e33f7ce, type: 3}
+  m_Name: Zelda
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::ActorData
+  id: actor_zelda
+  label: Zelda
+  icon: {fileID: 0}
+  tags:
+    auto: []
+    manual: []
+  modules:
+  - rid: 6686703559738916945
+  desc: Actor Description
+  abilities: []
+  lootTable: {fileID: 11400000, guid: 6f7c2a134a0f31c49a521cd97d50e73a, type: 2}
+  references:
+    version: 2
+    RefIds:
+    - rid: 6686703559738916945
+      type: {class: AncestryModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        ancestries:
+        - {fileID: 11400000, guid: 6ba2534b5d5642e45ac01b0d38b97404, type: 2}
+        - {fileID: 11400000, guid: 4433c77083f017d4fbd3f834cea62354, type: 2}

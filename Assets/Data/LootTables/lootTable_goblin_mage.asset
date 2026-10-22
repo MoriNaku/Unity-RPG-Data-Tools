@@ -10,15 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 160b766f7720b4740b3c9810fc4208d4, type: 3}
-  m_Name: lootTable_ 2
+  m_Name: lootTable_goblin_mage
   m_EditorClassIdentifier: Assembly-CSharp-Editor::LootTableData
-  id: 
-  label: 
+  id: lootTable_goblin_mage
+  label: Loot Table (Goblin Mage)
   icon: {fileID: 0}
   tags:
     auto: []
     manual: []
   modules: []
+  tableName: 
   table: []
   references:
     version: 2

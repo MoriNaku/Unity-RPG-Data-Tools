@@ -9,17 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 160b766f7720b4740b3c9810fc4208d4, type: 3}
-  m_Name: lootTable_ 14
-  m_EditorClassIdentifier: Assembly-CSharp-Editor::LootTableData
-  id: 
-  label: 
+  m_Script: {fileID: 11500000, guid: 2864206ff69ba85419002bea0e33f7ce, type: 3}
+  m_Name: Goblin Mage
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::ActorData
+  id: actor_goblin_mage
+  label: Goblin Mage
   icon: {fileID: 0}
   tags:
     auto: []
     manual: []
   modules: []
-  table: []
+  desc: Actor Description
+  abilities: []
+  lootTable: {fileID: 11400000, guid: b0812d02f8560b0448f3e5d7682863ac, type: 2}
   references:
     version: 2
     RefIds: []

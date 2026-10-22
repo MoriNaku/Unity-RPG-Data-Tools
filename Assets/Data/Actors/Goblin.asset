@@ -18,16 +18,10 @@ MonoBehaviour:
   tags:
     auto: []
     manual: []
-  modules:
-  - rid: 1817690919860961358
+  modules: []
   desc: Actor Description
   abilities: []
-  lootTable: {fileID: 11400000, guid: fd8c40359c9905d40b6712cd777e8d7f, type: 2}
+  lootTable: {fileID: 0}
   references:
     version: 2
-    RefIds:
-    - rid: 1817690919860961358
-      type: {class: AbilityModule, ns: , asm: Assembly-CSharp-Editor}
-      data:
-        abilities:
-        - {fileID: 11400000, guid: f1bd6ed62ed796945a658a268479a7bf, type: 2}
+    RefIds: []

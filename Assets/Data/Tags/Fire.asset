@@ -9,17 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 160b766f7720b4740b3c9810fc4208d4, type: 3}
-  m_Name: lootTable_link 1
-  m_EditorClassIdentifier: Assembly-CSharp-Editor::LootTableData
-  id: 
-  label: 
-  icon: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 9010bce5011bea5479fe5a2cc745b600, type: 3}
+  m_Name: Fire
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::CustomTag
+  id: tag_fire
+  label: Fire
+  icon: {fileID: 6534408748618682873, guid: bddb6eefa55aa3c4ea1285bb47e8bb3e, type: 3}
   tags:
     auto: []
     manual: []
   modules: []
-  table: []
+  category: 0
   references:
     version: 2
     RefIds: []

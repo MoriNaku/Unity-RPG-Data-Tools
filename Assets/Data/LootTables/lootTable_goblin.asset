@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 160b766f7720b4740b3c9810fc4208d4, type: 3}
   m_Name: lootTable_goblin
   m_EditorClassIdentifier: Assembly-CSharp-Editor::LootTableData
-  id: 
-  label: 
+  id: lootTable_goblin
+  label: Loot Table (Goblin)
   icon: {fileID: 0}
-  manualTags: []
-  tagList: []
   tags:
     auto: []
     manual: []
-  table:
-  - item: {fileID: 11400000, guid: c05cd8a62532aad45aa85632a054717b, type: 2}
-    amount: 1
-    chance: 1
+  modules: []
+  tableName: 
+  table: []
+  references:
+    version: 2
+    RefIds: []

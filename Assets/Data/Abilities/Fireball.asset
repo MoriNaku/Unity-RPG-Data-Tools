@@ -15,14 +15,20 @@ MonoBehaviour:
   id: ability_fireball
   label: Fireball
   icon: {fileID: 0}
-  manualTags: []
-  tagList: []
   tags:
     auto: []
-    manual:
-    - {fileID: 11400000, guid: 8145e0b7f2d097c46bf4a274684ec83d, type: 2}
+    manual: []
+  modules:
+  - rid: 6686703559738916930
   desc: Ability Description
   effects: []
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 6686703559738916930
+      type: {class: MechanicModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        mechanics:
+        - {fileID: 0}
+        - {fileID: 0}
+        - {fileID: 0}

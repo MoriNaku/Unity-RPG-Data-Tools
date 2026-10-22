@@ -17,11 +17,25 @@ MonoBehaviour:
   icon: {fileID: 0}
   tags:
     auto: []
-    manual: []
-  modules: []
-  desc: Actor Description
+    manual:
+    - {fileID: 11400000, guid: d094a421b9df9fc479054e934788337a, type: 2}
+  modules:
+  - rid: 6686703559738916942
+  - rid: 6686703559738916943
+  desc: The Hero of Time
   abilities: []
-  lootTable: {fileID: 11400000, guid: fabff23beea5165409839a08be692310, type: 2}
+  lootTable: {fileID: 11400000, guid: 18a624152cdb28e43ae172c52f414e79, type: 2}
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 6686703559738916942
+      type: {class: MechanicModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        mechanics:
+        - {fileID: 0}
+        - {fileID: 0}
+    - rid: 6686703559738916943
+      type: {class: AncestryModule, ns: , asm: Assembly-CSharp-Editor}
+      data:
+        ancestries:
+        - {fileID: 11400000, guid: 4433c77083f017d4fbd3f834cea62354, type: 2}

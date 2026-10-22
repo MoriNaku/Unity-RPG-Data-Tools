@@ -11,6 +11,7 @@ using UnityEngine.VFX;
 [CreateAssetMenu(fileName = "LootTableData", menuName = "Custom/Loot Table")]
 public class LootTableData : EntityData
 {
+    public string tableName = "";
     public List<LootEntry> table = new();
     public override VisualElement GetVisuals(Action onClick = null, Action onDel = null, bool delete = false)
     {
@@ -24,7 +25,7 @@ public class LootTableData : EntityData
         container.Add(titleC);
 
         var title = new Label();
-        title.text = "Loot Table";
+        title.text = tableName + " Loot Table";
         title.style.fontSize = 24;
         title.style.paddingTop = 4;
         title.style.paddingRight = 4;

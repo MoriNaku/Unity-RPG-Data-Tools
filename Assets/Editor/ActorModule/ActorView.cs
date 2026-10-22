@@ -114,7 +114,7 @@ public class ActorView : EditorWindow
             _lootProp = null;
             _modProp = null;
 
-            var path = AssetDatabase.GenerateUniqueAssetPath("Assets/Data/Loot Tables/lootTable_.asset");
+            var path = AssetDatabase.GenerateUniqueAssetPath("Assets/Data/LootTables/lootTable_.asset");
             AssetDatabase.CreateAsset(loot, path);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -239,6 +239,7 @@ public class ActorView : EditorWindow
         if (loot == null)
         {
             loot = ScriptableObject.CreateInstance<LootTableData>();
+            loot.tableName = "";
         }
         lootView = loot.GetVisuals(() => LootEntryView.Open(loot));
         infoView.Add(lootView);

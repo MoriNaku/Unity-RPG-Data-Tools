@@ -28,4 +28,7 @@ MonoBehaviour:
     - rid: 6686703275531567184
       type: {class: MechanicModule, ns: , asm: Assembly-CSharp-Editor}
       data:
-        mechanics: []
+        mechanics:
+        - {fileID: 0}
+        - {fileID: 0}
+        - {fileID: 0}
